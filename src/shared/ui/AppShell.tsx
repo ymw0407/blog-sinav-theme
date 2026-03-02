@@ -50,6 +50,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const currentCategory = category === 'default' ? null : resolveCategory(category);
   const [catsOpen, setCatsOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [navOverflow, setNavOverflow] = React.useState(false);
   const headerCatsRef = React.useRef<HTMLElement | null>(null);
   const catsWrapRef = React.useRef<HTMLDivElement | null>(null);
   const catsBtnRef = React.useRef<HTMLButtonElement | null>(null);
@@ -255,6 +256,40 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     else document.documentElement.dataset.page = 'app';
   }, [isExhibit, loc.pathname]);
 
+  React.useLayoutEffect(() => {
+    if (isExhibit) {
+      delete document.documentElement.dataset.navOverflow;
+      setNavOverflow(false);
+      return;
+    }
+
+    const el = headerCatsRef.current;
+    if (!el) return;
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const next = el.scrollWidth > el.clientWidth + 4;
+      setNavOverflow(next);
+      if (next) document.documentElement.dataset.navOverflow = '1';
+      else delete document.documentElement.dataset.navOverflow;
+    };
+    const requestUpdate = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
+    };
+
+    requestUpdate();
+    window.addEventListener('resize', requestUpdate);
+    const ro = 'ResizeObserver' in window ? new ResizeObserver(requestUpdate) : null;
+    ro?.observe(el);
+    return () => {
+      window.removeEventListener('resize', requestUpdate);
+      if (raf) window.cancelAnimationFrame(raf);
+      ro?.disconnect();
+    };
+  }, [isExhibit, siteName, categories.length, currentCategory?.key, state.accessToken]);
+
   React.useEffect(() => {
     return subscribeSiteIdentity(() => setSiteIdentityState(getSiteIdentity()));
   }, []);
@@ -371,13 +406,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="container">
         {!isExhibit ? (
           <header className="header">
-          <div className="headerRow">
+            <div className="headerRow">
               <div className="headerLeft">
                 <button
                   type="button"
                   className="btn iconBtn headerMenuBtn"
                   aria-label="Open menu"
                   onClick={() => setMobileOpen(true)}
+                  title={navOverflow ? 'Open menu (more)' : 'Open menu'}
                 >
                   <MenuIcon />
                 </button>
@@ -387,7 +423,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="pill muted repoPill">{env.VITE_CONTENT_REPO_OWNER + '/' + env.VITE_CONTENT_REPO_NAME}</div>
               </div>
 
-            <nav className="headerCats" aria-label="Primary Navigation" ref={headerCatsRef}>
+              <nav
+                className="headerCats"
+                aria-label="Primary Navigation"
+                ref={headerCatsRef}
+                onWheel={(e) => {
+                  // On desktop Windows, horizontal scrolling is not discoverable.
+                  // Translate vertical wheel to horizontal scroll when needed.
+                  const el = headerCatsRef.current;
+                  if (!el) return;
+                  if (!navOverflow) return;
+                  if (Math.abs(e.deltaY) < 1) return;
+                  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+                  el.scrollLeft += e.deltaY;
+                  e.preventDefault();
+                }}
+              >
               <NavLink to="/timeline" className={({ isActive }) => `catLink ${isActive ? 'catLinkActive' : ''}`}>
                 Timeline
               </NavLink>
@@ -510,7 +561,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 )
               : null}
 
-            <div className="headerRight">
+              <div className="headerRight">
               <SocialLinks className="headerSocial" />
               <ThemeToggle />
               {local ? (
@@ -556,8 +607,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   </button>
                 </>
               )}
+              </div>
             </div>
-          </div>
           </header>
         ) : null}
 

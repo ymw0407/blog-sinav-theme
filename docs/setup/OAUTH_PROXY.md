@@ -20,13 +20,30 @@ pnpm dlx wrangler deploy
 
 ## 2) (옵션) client_secret 설정
 
-PKCE만으로 교환이 되는 환경이면 secret 없이도 동작할 수 있습니다.
-만약 GitHub가 `client_secret`을 요구하는 경우, Worker에 secret을 설정하세요:
+대부분의 경우 토큰 교환 시 `client_secret`이 필요합니다. Worker에 secret으로 설정하세요:
 
 ```bash
 cd workers/oauth-proxy
 pnpm dlx wrangler secret put GITHUB_CLIENT_SECRET
 ```
+
+## 3) (권장) Origin 잠그기
+
+내 사이트 1개만 허용하려면 CORS Origin을 allowlist로 제한하세요.
+
+`workers/oauth-proxy/wrangler.toml`의 `ALLOWED_ORIGINS`에 다음처럼 넣고 다시 배포합니다.
+
+예:
+
+- `https://ymw0407.github.io`
+- `http://localhost:5173`
+
+```toml
+[vars]
+ALLOWED_ORIGINS = "https://ymw0407.github.io,http://localhost:5173"
+```
+
+원하면 `ALLOWED_CLIENT_IDS`도 설정해서 특정 OAuth App만 프록시를 사용하게 제한할 수 있습니다.
 
 ## 3) blog-web에 프록시 URL 연결
 
@@ -40,4 +57,3 @@ Worker가 제공하는 엔드포인트는 다음입니다:
 - `POST /github/oauth/access_token`
 
 body는 `application/x-www-form-urlencoded` 그대로 전달됩니다.
-

@@ -662,13 +662,24 @@ globalStyle('.headerCats', {
   gap: 10,
   padding: 0,
   flex: '1 1 420px',
-  justifyContent: 'center',
+  justifyContent: 'flex-start',
   overflowX: 'auto',
   WebkitOverflowScrolling: 'touch',
   scrollbarWidth: 'none'
 });
 
 globalStyle('.headerCats::-webkit-scrollbar', { display: 'none' });
+
+// When nav overflows (typically due to zoom), expose a "more" affordance.
+globalStyle('html[data-nav-overflow="1"] .headerMenuBtn', {
+  display: 'grid'
+});
+
+globalStyle('html[data-nav-overflow="1"] .headerCats', {
+  // Add a subtle fade so users notice there's more to scroll.
+  maskImage: 'linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%)',
+  WebkitMaskImage: 'linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%)'
+});
 
 globalStyle('.catLink', {
   display: 'inline-flex',
