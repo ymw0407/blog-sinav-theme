@@ -7,5 +7,4 @@ dist
 .env.local
 
 # checked-out content repo (Repo B)
-content/
-
+/content/
