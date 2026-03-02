@@ -629,7 +629,7 @@ export default function LandingPage() {
           <div>
             <h2 style={{ margin: 0 }}>Featured</h2>
             <p className="muted" style={{ margin: '8px 0 0' }}>
-              理쒓렐 肄섑뀗痢좊? ??踰덉뿉 ?묒뼱蹂닿린.
+              최근 콘텐츠를 한 번에 훑어보기.
             </p>
           </div>
           <div className="row">
@@ -763,7 +763,7 @@ export default function LandingPage() {
             <div>
               <h2 style={{ margin: 0 }}>No content yet</h2>
               <p className="muted" style={{ margin: '8px 0 0' }}>
-                濡쒖뺄 紐⑤뱶?먯꽌??諛붾줈 ?묒꽦?????덉뼱??
+                로컬 모드에서는 데모 콘텐츠를 바로 불러올 수도 있어요.
               </p>
             </div>
             <div className="row" style={{ justifyContent: 'flex-end' }}>
