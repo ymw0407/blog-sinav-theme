@@ -226,6 +226,18 @@ globalStyle('.btn.primary:hover', {
   background: `color-mix(in srgb, ${vars.color.accent} 88%, black)`
 });
 
+// Header login button: light mode needs stronger contrast (some accents are bright/pastel).
+globalStyle('html:not([data-theme="dark"]) .headerLoginBtn', {
+  background: `color-mix(in srgb, ${vars.color.accent} 78%, #0b1220)`,
+  borderColor: 'transparent',
+  color: '#fff',
+  boxShadow: `0 14px 30px rgba(2,6,23,.14)`
+});
+
+globalStyle('html:not([data-theme="dark"]) .headerLoginBtn:hover', {
+  background: `color-mix(in srgb, ${vars.color.accent} 70%, #0b1220)`
+});
+
 globalStyle('.btn.danger', {
   borderColor: `color-mix(in srgb, ${vars.color.danger} 50%, ${vars.color.border})`,
   color: vars.color.danger

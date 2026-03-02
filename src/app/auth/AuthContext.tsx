@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import { getAllowedUsers, getEnv } from '../env';
 import { clearPkceSession, startGitHubLogin } from './githubOAuth';
 
+const AUTH_SESSION = 'blog.auth';
+
 type AuthState = {
   accessToken: string | null;
   username: string | null;
@@ -20,16 +22,42 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({ accessToken: null, username: null });
+  const [state, setState] = useState<AuthState>(() => {
+    try {
+      const raw = sessionStorage.getItem(AUTH_SESSION);
+      if (!raw) return { accessToken: null, username: null };
+      const parsed = JSON.parse(raw) as Partial<AuthState>;
+      if (typeof parsed.accessToken === 'string' && typeof parsed.username === 'string') {
+        return { accessToken: parsed.accessToken, username: parsed.username };
+      }
+    } catch {
+      // ignore
+    }
+    return { accessToken: null, username: null };
+  });
+
+  const persist = (next: AuthState) => {
+    setState(next);
+    try {
+      if (next.accessToken && next.username) {
+        sessionStorage.setItem(AUTH_SESSION, JSON.stringify(next));
+      } else {
+        sessionStorage.removeItem(AUTH_SESSION);
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     const handler = (e: any) => {
       const detail = e.detail as { token?: string; username?: string };
       if (!detail?.token || !detail?.username) return;
-      setState({ accessToken: detail.token, username: detail.username });
+      persist({ accessToken: detail.token, username: detail.username });
     };
     window.addEventListener('blog-auth', handler as any);
     return () => window.removeEventListener('blog-auth', handler as any);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const env = getEnv();
@@ -45,13 +73,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       logout: () => {
         clearPkceSession();
-        setState({ accessToken: null, username: null });
+        persist({ accessToken: null, username: null });
       },
       getOctokit: () => {
         if (!state.accessToken) throw new Error('Not authenticated.');
         return new Octokit({ auth: state.accessToken });
       },
-      setAuth: (next) => setState({ accessToken: next.accessToken, username: next.username })
+      setAuth: (next) => persist({ accessToken: next.accessToken, username: next.username })
     };
   }, [isAllowedUser, state]);
 
@@ -69,4 +97,3 @@ export async function hydrateUser(accessToken: string) {
   const me = await octokit.users.getAuthenticated();
   return me.data.login;
 }
-

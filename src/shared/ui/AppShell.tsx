@@ -595,7 +595,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       Work locally
                     </button>
                   ) : null}
-                  <button className="btn primary" onClick={() => login(loc.pathname)}>
+                  <button className="btn primary headerLoginBtn" onClick={() => login(loc.pathname)}>
                     Login
                   </button>
                 </>
