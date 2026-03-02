@@ -72,6 +72,13 @@ export async function exchangeCodeForToken(code: string) {
   const verifier = getSessionVerifier();
   if (!verifier) throw new Error('Missing code_verifier (session expired).');
 
+  const proxyBase = (env.VITE_OAUTH_PROXY_URL || '').trim().replace(/\/+$/, '');
+  if (!proxyBase) {
+    throw new Error(
+      'GitHub OAuth token exchange is blocked by browser CORS. Set VITE_OAUTH_PROXY_URL to a server-side token exchange proxy.'
+    );
+  }
+
   // NOTE: GitHub OAuth token endpoint historically had limitations with CORS preflight.
   // We intentionally use application/x-www-form-urlencoded and no custom headers to avoid OPTIONS.
   const body = new URLSearchParams();
@@ -80,7 +87,8 @@ export async function exchangeCodeForToken(code: string) {
   body.set('redirect_uri', env.VITE_GITHUB_REDIRECT_URI);
   body.set('code_verifier', verifier);
 
-  const res = await fetch('https://github.com/login/oauth/access_token', {
+  // Token exchange must be server-side. The proxy will call GitHub and return the raw token response.
+  const res = await fetch(`${proxyBase}/github/oauth/access_token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body
@@ -98,4 +106,3 @@ export async function exchangeCodeForToken(code: string) {
   }
   return parsed.access_token;
 }
-

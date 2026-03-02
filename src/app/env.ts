@@ -3,6 +3,9 @@ import { z } from 'zod';
 const EnvSchema = z.object({
   VITE_GITHUB_CLIENT_ID: z.string().optional().default(''),
   VITE_GITHUB_REDIRECT_URI: z.string().optional().default(''),
+  // Token exchange must happen server-side due to GitHub CORS. Provide a proxy endpoint.
+  // Example: https://<your-worker>.<subdomain>.workers.dev
+  VITE_OAUTH_PROXY_URL: z.string().optional().default(''),
   VITE_CONTENT_REPO_OWNER: z.string().optional().default('local'),
   VITE_CONTENT_REPO_NAME: z.string().optional().default('blog-content'),
   VITE_ALLOWED_USERS: z.string().optional(),

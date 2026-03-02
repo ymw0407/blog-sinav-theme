@@ -56,6 +56,7 @@ jobs:
           # Expose Vite envs at build-time (set these in Repo A settings: Variables).
           VITE_GITHUB_CLIENT_ID: ${{ vars.VITE_GITHUB_CLIENT_ID }}
           VITE_GITHUB_REDIRECT_URI: ${{ vars.VITE_GITHUB_REDIRECT_URI }}
+          VITE_OAUTH_PROXY_URL: ${{ vars.VITE_OAUTH_PROXY_URL }}
           VITE_CONTENT_REPO_OWNER: ${{ vars.VITE_CONTENT_REPO_OWNER }}
           VITE_CONTENT_REPO_NAME: ${{ vars.VITE_CONTENT_REPO_NAME }}
           VITE_ALLOWED_USERS: ${{ vars.VITE_ALLOWED_USERS }}

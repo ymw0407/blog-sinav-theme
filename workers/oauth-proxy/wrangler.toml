@@ -1,0 +1,9 @@
+name = "blog-oauth-proxy"
+main = "worker.ts"
+compatibility_date = "2026-03-02"
+
+[vars]
+# Optional. Set this as a secret instead for private apps:
+# wrangler secret put GITHUB_CLIENT_SECRET
+# GITHUB_CLIENT_SECRET = ""
+
