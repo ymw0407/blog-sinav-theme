@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1400" viewBox="0 0 1400 1400">
+  <defs>
+    <radialGradient id="p3" cx="55%" cy="35%" r="80%">
+      <stop offset="0" stop-color="#a855f7" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#0b0d10" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="p3b" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+  </defs>
+  <rect width="1400" height="1400" fill="#0b0d10"/>
+  <circle cx="820" cy="420" r="520" fill="url(#p3)" filter="url(#p3b)"/>
+  <rect x="160" y="200" width="1080" height="1000" rx="28" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="240" y="980" fill="#ffffff" fill-opacity="0.82" font-family="ui-sans-serif, system-ui" font-size="44" font-weight="700">Photo 03</text>
+  <text x="240" y="1030" fill="#ffffff" fill-opacity="0.55" font-family="ui-sans-serif, system-ui" font-size="18">Square ratio</text>
+</svg>
+

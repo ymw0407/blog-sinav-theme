@@ -1,0 +1,57 @@
+site:
+  name: blog
+  heroTitle: Personal Blog
+  heroSubtitle: Dev · Coffee · Travel · Photo · Alcohol — 정적 인덱스 기반 읽기 + (옵션) GitHub OAuth(PKCE) 쓰기.
+  kicker: Minimal · GitHub Pages · PKCE · 2-Repo
+
+categories:
+  - key: dev
+    label: Dev
+    description: 기술 메모 / 아키텍처 / 트러블슈팅
+    accent: "#2f6feb"
+    nav: true
+    landing: true
+    timeline: true
+  - key: coffee
+    label: Coffee
+    description: 브루잉 / 원두 / 카페 기록
+    accent: "#d97706"
+    nav: true
+    landing: true
+    timeline: true
+  - key: travel
+    label: Travel
+    description: 동선 / 기록 / 여행
+    accent: "#14b8a6"
+    nav: true
+    landing: true
+    timeline: true
+  - key: photo
+    label: Photo
+    description: 작품 / 스냅 / 갤러리
+    accent: "#a855f7"
+    nav: true
+    landing: true
+    timeline: true
+  - key: drink
+    label: Alcohol
+    description: 술 / 바 / 테이스팅 노트
+    accent: "#fb7185"
+    nav: true
+    landing: true
+    timeline: true
+
+social:
+  - icon: github
+    label: GitHub
+    url: https://github.com/
+  - icon: instagram
+    label: Instagram
+    url: https://instagram.com/
+  - icon: linkedin
+    label: LinkedIn
+    url: https://linkedin.com/
+  - icon: website
+    label: Website
+    url: https://example.com/
+
