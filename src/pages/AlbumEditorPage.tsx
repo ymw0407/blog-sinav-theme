@@ -1,8 +1,8 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
 import { uploadAlbumImage, upsertAlbumJsonInRepo } from '../app/content/albumsRepo';
-import { getAlbumsMerged } from '../app/content/contentIndex';
+import { getAlbumsMerged } from '../app/content/contentindex';
 import type { Album } from '../app/content/types';
 import { getEnv } from '../app/env';
 import { upsertLocalAlbum } from '../app/local/albumsStore';
@@ -519,3 +519,4 @@ export default function AlbumEditorPage() {
     </div>
   );
 }
+

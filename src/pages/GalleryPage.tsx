@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getGalleryIndex } from '../app/content/contentIndex';
+import { getGalleryIndex } from '../app/content/contentindex';
 import { getEnv } from '../app/env';
 import { deleteLocalWork, upsertLocalWork } from '../app/local/galleryStore';
 import { saveLocalImage } from '../app/local/mediaStore';
@@ -780,7 +780,7 @@ export default function GalleryPage() {
                   value={addNote}
                   onChange={(e) => setAddNote(e.target.value)}
                   disabled={adding}
-                  placeholder="Any extra notes…"
+                  placeholder="Any extra notes?"
                   style={{ minHeight: 90 }}
                 />
               </div>
@@ -1167,3 +1167,4 @@ export default function GalleryPage() {
     </div>
   );
 }
+

@@ -2,7 +2,7 @@
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getPortfolioIndex } from '../app/content/contentIndex';
+import { getPortfolioIndex } from '../app/content/contentindex';
 import type { Portfolio } from '../app/content/types';
 import { getEnv } from '../app/env';
 import { uploadPortfolioAsset, upsertPortfolioJsonInRepo } from '../app/content/portfolioRepo';
@@ -2751,3 +2751,4 @@ export default function PortfolioEditorPage() {
     </div>
   );
 }
+

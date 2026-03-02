@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getPortfolioIndex } from '../app/content/contentIndex';
+import { getPortfolioIndex } from '../app/content/contentindex';
 import { getEnv } from '../app/env';
 import { uploadPortfolioAsset, upsertPortfolioJsonInRepo } from '../app/content/portfolioRepo';
 import { clearProfileDraft, getProfileDraft, setProfileDraft, type ProfileDraftData } from '../app/local/profileDraftStore';
@@ -219,7 +219,7 @@ export default function ProfileEditorPage() {
             <RichEditor initialDoc={doc} onChange={(next) => setDoc(next)} onUploadImage={local ? undefined : uploadImage} />
           ) : (
             <div className="card" style={{ padding: 12 }}>
-              <div className="muted">Loading editor…</div>
+              <div className="muted">Loading editor...</div>
             </div>
           )}
         </div>
@@ -230,9 +230,10 @@ export default function ProfileEditorPage() {
           Cancel
         </Link>
         <button className="btn primary" disabled={!canWrite || saving || loading} type="button" onClick={() => save()}>
-          {saving ? 'Saving…' : local ? 'Save (Local)' : 'Save (GitHub)'}
+          {saving ? 'Saving...' : local ? 'Save (Local)' : 'Save (GitHub)'}
         </button>
       </div>
     </div>
   );
 }
+

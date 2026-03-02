@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAlbumsMerged, getAllPostsMerged, getGalleryIndex, getPortfolioIndex } from '../app/content/contentIndex';
+import { getAlbumsMerged, getAllPostsMerged, getGalleryIndex, getPortfolioIndex } from '../app/content/contentindex';
 import { getSiteConfig, listLandingCategories } from '../app/config/siteConfig';
 import { clearSiteIdentity, getSiteIdentity, setSiteIdentity, subscribeSiteIdentity, type SiteIdentity } from '../app/local/siteIdentityStore';
 import { useAuth } from '../app/auth/AuthContext';

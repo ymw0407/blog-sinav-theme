@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getPortfolioIndex } from '../app/content/contentIndex';
+import { getPortfolioIndex } from '../app/content/contentindex';
 import { isGitHubWriteEnabled, isLocalMode } from '../app/mode';
 import ProfileViewer from '../shared/ui/ProfileViewer';
 
@@ -50,4 +50,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 

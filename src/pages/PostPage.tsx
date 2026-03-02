@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
 import { createComment, ensureCommentIssue } from '../app/comments/commentsApi';
-import { getCommentsIndex, getPostById } from '../app/content/contentIndex';
+import { getCommentsIndex, getPostById } from '../app/content/contentindex';
 import { loadDocByImportPath } from '../app/content/docLoader';
 import { loadMdxByImportPath, Mdx } from '../app/content/mdxLoader';
 import { getEnv } from '../app/env';

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { createExtensions } from '../app/editor/tiptap/extensions';
 
@@ -18,4 +18,5 @@ export default function PostDocView({ doc }: { doc: any }) {
   if (!editor) return <div className="muted">Loading...</div>;
   return <EditorContent editor={editor} />;
 }
+
 

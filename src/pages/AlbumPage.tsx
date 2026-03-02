@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getAlbumsMerged } from '../app/content/contentIndex';
+import { getAlbumsMerged } from '../app/content/contentindex';
 import { deleteAlbumFromRepo } from '../app/content/albumsRepo';
 import { getEnv } from '../app/env';
 import { deleteLocalAlbum } from '../app/local/albumsStore';
@@ -148,3 +148,4 @@ export default function AlbumPage() {
     </div>
   );
 }
+
