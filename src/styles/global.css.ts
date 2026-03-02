@@ -672,7 +672,9 @@ globalStyle('.headerCats::-webkit-scrollbar', { display: 'none' });
 
 // When nav overflows (typically due to zoom), expose a "more" affordance.
 globalStyle('html[data-nav-overflow="1"] .headerMenuBtn', {
-  display: 'grid'
+  visibility: 'visible',
+  pointerEvents: 'auto',
+  opacity: 1
 });
 
 globalStyle('html[data-nav-overflow="1"] .headerCats', {
@@ -714,7 +716,15 @@ globalStyle('.headerSocial', {
 });
 
 globalStyle('.headerMenuBtn', {
-  display: 'none'
+  // Reserve space to avoid layout jitter when overflow toggles around a breakpoint/zoom.
+  display: 'grid',
+  width: 40,
+  height: 40,
+  borderRadius: 999,
+  visibility: 'hidden',
+  pointerEvents: 'none',
+  opacity: 0,
+  transition: `opacity ${vars.motion.normal} ease`
 });
 
 globalStyle('.socialLinks', { display: 'flex', gap: 6, alignItems: 'center' });
@@ -791,17 +801,20 @@ globalStyle('.headerSocial', {
 globalStyle('.headerMenuBtn', {
   '@media': {
     'screen and (max-width: 760px)': {
-      display: 'grid',
-      width: 40,
-      height: 40,
-      borderRadius: 999
+      visibility: 'visible',
+      pointerEvents: 'auto',
+      opacity: 1
     }
   }
 });
 
 globalStyle('html[data-sheet="open"] .headerMenuBtn', {
   '@media': {
-    'screen and (max-width: 760px)': { display: 'none' }
+    'screen and (max-width: 760px)': {
+      visibility: 'hidden',
+      pointerEvents: 'none',
+      opacity: 0
+    }
   }
 });
 

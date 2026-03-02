@@ -6,12 +6,12 @@ compatibility_date = "2026-03-02"
 # Allowed origins for CORS (comma-separated).
 # Example:
 # ALLOWED_ORIGINS = "https://ymw0407.github.io,http://localhost:5173"
-ALLOWED_ORIGINS = ""
+ALLOWED_ORIGINS = "https://ymw0407.github.io"
 
 # Optional: lock proxy usage to a known GitHub OAuth App client id.
 # Example:
 # ALLOWED_CLIENT_IDS = "Iv1.1234567890abcdef"
-ALLOWED_CLIENT_IDS = ""
+ALLOWED_CLIENT_IDS = "Iv23liNPffT708bNpFMD"
 
 # Optional. Set this as a secret:
 #   wrangler secret put GITHUB_CLIENT_SECRET
