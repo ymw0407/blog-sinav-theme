@@ -25,10 +25,13 @@ jobs:
 
       - name: Checkout (blog-content)
         uses: actions/checkout@v4
+        if: ${{ vars.CONTENT_REPO != '' }}
         with:
           repository: ${{ vars.CONTENT_REPO }}
           path: content
-          token: ${{ secrets.CONTENT_REPO_TOKEN }}
+          # If CONTENT_REPO_TOKEN isn't set, fall back to github.token.
+          # This works for public repos; private repos still require a PAT/App token.
+          token: ${{ secrets.CONTENT_REPO_TOKEN || github.token }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -70,4 +73,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
