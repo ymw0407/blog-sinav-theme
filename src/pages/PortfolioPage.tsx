@@ -2,7 +2,7 @@
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getPortfolioIndex } from '../app/content/contentindex';
+import { getPortfolioIndex } from '../app/content/contentIndex';
 import { isGitHubWriteEnabled, isLocalMode } from '../app/mode';
 import Lightbox, { type LightboxItem } from '../shared/ui/Lightbox';
 import ResolvedImage from '../shared/ui/ResolvedImage';
@@ -952,4 +952,5 @@ export default function PortfolioPage() {
     </div>
   );
 }
+
 

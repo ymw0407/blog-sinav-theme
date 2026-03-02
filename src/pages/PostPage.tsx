@@ -1,8 +1,8 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
 import { createComment, ensureCommentIssue } from '../app/comments/commentsApi';
-import { getCommentsIndex, getPostById } from '../app/content/contentindex';
+import { getCommentsIndex, getPostById } from '../app/content/contentIndex';
 import { loadDocByImportPath } from '../app/content/docLoader';
 import { loadMdxByImportPath, Mdx } from '../app/content/mdxLoader';
 import { getEnv } from '../app/env';
@@ -182,7 +182,7 @@ export default function PostPage() {
         {post.kind === 'doc' || doc ? (
           <PostDocView doc={doc ?? post.doc} />
         ) : (
-          <Mdx>{mod ? <mod.Component /> : <div className="muted">Loading…</div>}</Mdx>
+          <Mdx>{mod ? <mod.Component /> : <div className="muted">Loading...</div>}</Mdx>
         )}
       </div>
 
@@ -196,7 +196,7 @@ export default function PostPage() {
       <div style={{ marginTop: 24 }}>
         <h2>댓글</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          댓글은 GitHub Issues 기반이며, 이 페이지는 빌드 시점 스냅샷을 정적으로 렌더합니다.
+          댓글은 GitHub Issues 기반이며, 페이지 빌드 시점 스냅샷을 정적으로 렌더합니다.
         </p>
 
         {local ? (
@@ -239,7 +239,7 @@ export default function PostPage() {
               <div>
                 <strong>댓글 작성</strong>
               </div>
-              <div className="muted">{local ? '로컬 모드: 브라우저에 저장' : '로그인 + 허용 사용자만 작성 가능합니다.'}</div>
+              <div className="muted">{local ? '로컬 모드: 브라우저에만 저장됩니다.' : '로그인 후(허용된 사용자만) 작성할 수 있습니다.'}</div>
             </div>
             {local ? null : !state.accessToken ? (
               <button
@@ -249,7 +249,7 @@ export default function PostPage() {
                 GitHub 로그인
               </button>
             ) : (
-              <div className="pill">@{state.username ?? '…'}</div>
+              <div className="pill">@{state.username ?? 'unknown'}</div>
             )}
           </div>
 
@@ -266,7 +266,7 @@ export default function PostPage() {
           <div style={{ marginTop: 10 }}>
             <textarea
               className="textarea"
-              placeholder="댓글을 입력하세요"
+              placeholder="댓글을 입력하세요."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               disabled={local ? sending : !state.accessToken || !isAllowedUser || sending}
@@ -279,17 +279,17 @@ export default function PostPage() {
               onClick={async () => {
                 setSending(true);
                 try {
-                  if (local) {
-                    addLocalComment({ postId: post.id, user: localName, body: comment.trim() });
-                    setComment('');
-                    alert('로컬 댓글을 저장했습니다.');
-                  } else {
-                    const octokit = getOctokit();
-                    const issueNumber = await ensureCommentIssue(octokit, post.id);
-                    await createComment(octokit, issueNumber, comment.trim());
-                    setComment('');
-                    alert('댓글을 등록했습니다. (다음 빌드 후 목록에 반영됩니다)');
-                  }
+                    if (local) {
+                      addLocalComment({ postId: post.id, user: localName, body: comment.trim() });
+                      setComment('');
+                      alert('로컬 댓글을 삭제했습니다.');
+                    } else {
+                      const octokit = getOctokit();
+                      const issueNumber = await ensureCommentIssue(octokit, post.id);
+                      await createComment(octokit, issueNumber, comment.trim());
+                      setComment('');
+                      alert('댓글이 등록되었습니다. (다음 빌드 후 목록에 반영됩니다.)');
+                    }
                 } catch (e) {
                   alert(e instanceof Error ? e.message : String(e));
                 } finally {
@@ -297,7 +297,7 @@ export default function PostPage() {
                 }
               }}
             >
-              {sending ? '전송 중…' : '댓글 등록'}
+              {sending ? '전송 중...' : '댓글 등록'}
             </button>
           </div>
 
@@ -311,3 +311,4 @@ export default function PostPage() {
     </div>
   );
 }
+

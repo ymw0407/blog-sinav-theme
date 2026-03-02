@@ -1,6 +1,6 @@
-import clsx from 'clsx';
+﻿import clsx from 'clsx';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getTimelinePosts } from '../app/content/contentindex';
+import { getTimelinePosts } from '../app/content/contentIndex';
 import { getSiteConfig, listTimelineCategories, resolveCategory } from '../app/config/siteConfig';
 import ResolvedThumb from '../shared/ui/ResolvedThumb';
 import { formatDateTime } from '../shared/lib/datetime';
@@ -213,3 +213,4 @@ export default function TimelinePage() {
     </div>
   );
 }
+

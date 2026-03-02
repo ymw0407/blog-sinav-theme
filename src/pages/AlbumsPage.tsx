@@ -1,5 +1,5 @@
 ﻿import { Link } from 'react-router-dom';
-import { getAlbumsMerged } from '../app/content/contentindex';
+import { getAlbumsMerged } from '../app/content/contentIndex';
 import ResolvedImage from '../shared/ui/ResolvedImage';
 
 export default function AlbumsPage() {
@@ -49,4 +49,5 @@ export default function AlbumsPage() {
     </div>
   );
 }
+
 

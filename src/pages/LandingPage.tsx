@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getAlbumsMerged, getAllPostsMerged, getGalleryIndex, getPortfolioIndex } from '../app/content/contentindex';
+import { getAlbumsMerged, getAllPostsMerged, getGalleryIndex, getPortfolioIndex } from '../app/content/contentIndex';
 import { getSiteConfig, listLandingCategories } from '../app/config/siteConfig';
 import { clearSiteIdentity, getSiteIdentity, setSiteIdentity, subscribeSiteIdentity, type SiteIdentity } from '../app/local/siteIdentityStore';
 import { useAuth } from '../app/auth/AuthContext';
@@ -357,7 +357,7 @@ export default function LandingPage() {
                         <div className="heroCropFrame">
                           <img src={u.url} alt="" aria-hidden="true" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                         </div>
-                        <div className="heroCropBadge">Uploading…</div>
+                        <div className="heroCropBadge">Uploading...</div>
                       </div>
                     ))}
 
@@ -629,7 +629,7 @@ export default function LandingPage() {
           <div>
             <h2 style={{ margin: 0 }}>Featured</h2>
             <p className="muted" style={{ margin: '8px 0 0' }}>
-              최근 콘텐츠를 한 번에 훑어보기.
+              理쒓렐 肄섑뀗痢좊? ??踰덉뿉 ?묒뼱蹂닿린.
             </p>
           </div>
           <div className="row">
@@ -763,7 +763,7 @@ export default function LandingPage() {
             <div>
               <h2 style={{ margin: 0 }}>No content yet</h2>
               <p className="muted" style={{ margin: '8px 0 0' }}>
-                로컬 모드에서도 바로 작성할 수 있어요.
+                濡쒖뺄 紐⑤뱶?먯꽌??諛붾줈 ?묒꽦?????덉뼱??
               </p>
             </div>
             <div className="row" style={{ justifyContent: 'flex-end' }}>
@@ -793,3 +793,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

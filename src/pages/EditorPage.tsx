@@ -2,7 +2,7 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
 import { getSiteConfig } from '../app/config/siteConfig';
-import { getPostById } from '../app/content/contentindex';
+import { getPostById } from '../app/content/contentIndex';
 import { loadDocByImportPath } from '../app/content/docLoader';
 import { getEnv } from '../app/env';
 import { clearEditorDraft, getEditorDraft, setEditorDraft, type EditorDraftData } from '../app/local/editorDraftStore';
@@ -471,7 +471,7 @@ export default function EditorPage() {
 
       <div className="row" style={{ justifyContent: 'space-between', marginTop: 12 }}>
         <div className="muted">
-          {local ? `local: ${postId}` : `repo: ${env.VITE_CONTENT_REPO_OWNER}/${env.VITE_CONTENT_REPO_NAME} 쨌 path: posts/${category}/${slug}.json`}
+          {local ? `local: ${postId}` : `repo: ${env.VITE_CONTENT_REPO_OWNER}/${env.VITE_CONTENT_REPO_NAME} · path: posts/${category}/${slug}.json`}
         </div>
         <button
           className="btn primary"
@@ -629,4 +629,5 @@ export default function EditorPage() {
     </div>
   );
 }
+
 

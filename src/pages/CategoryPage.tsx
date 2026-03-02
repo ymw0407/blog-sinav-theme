@@ -1,6 +1,6 @@
 ﻿import clsx from 'clsx';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { getPostsByCategory } from '../app/content/contentindex';
+import { getPostsByCategory } from '../app/content/contentIndex';
 import { resolveCategory } from '../app/config/siteConfig';
 import ResolvedThumb from '../shared/ui/ResolvedThumb';
 import { formatDateTime } from '../shared/lib/datetime';
@@ -82,4 +82,5 @@ export default function CategoryPage() {
     </div>
   );
 }
+
 

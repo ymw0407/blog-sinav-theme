@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getPortfolioIndex } from '../app/content/contentindex';
+import { getPortfolioIndex } from '../app/content/contentIndex';
 import { getEnv } from '../app/env';
 import { uploadPortfolioAsset, upsertPortfolioJsonInRepo } from '../app/content/portfolioRepo';
 import { clearProfileDraft, getProfileDraft, setProfileDraft, type ProfileDraftData } from '../app/local/profileDraftStore';
@@ -236,4 +236,5 @@ export default function ProfileEditorPage() {
     </div>
   );
 }
+
 

@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
-import { getGalleryIndex } from '../app/content/contentindex';
+import { getGalleryIndex } from '../app/content/contentIndex';
 import { getEnv } from '../app/env';
 import { deleteLocalWork, upsertLocalWork } from '../app/local/galleryStore';
 import { saveLocalImage } from '../app/local/mediaStore';
@@ -1167,4 +1167,5 @@ export default function GalleryPage() {
     </div>
   );
 }
+
 
