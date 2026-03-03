@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import { loadLocalMedia } from '../../app/local/mediaStore';
-import { resolvePublicUrl } from '../lib/url';
+import { makeMediaCacheBypassUrl, resolvePublicUrl } from '../lib/url';
 
 type Props = {
   src: string;
@@ -17,12 +17,14 @@ export default function ResolvedThumb({ src, alt, loading }: Props) {
   const [near, setNear] = React.useState(() => !isLocal);
   const [resolved, setResolved] = React.useState<string>(() => (isLocal ? EMPTY_IMG : resolvePublicUrl(src)));
   const [loaded, setLoaded] = React.useState(false);
+  const [retried, setRetried] = React.useState(false);
   const fgRef = React.useRef<HTMLImageElement | null>(null);
 
   React.useEffect(() => {
     const local = src.startsWith('local-media:');
     setNear(!local);
     setResolved(local ? EMPTY_IMG : resolvePublicUrl(src));
+    setRetried(false);
   }, [src]);
 
   React.useEffect(() => {
@@ -87,6 +89,13 @@ export default function ResolvedThumb({ src, alt, loading }: Props) {
         decoding="async"
         data-loaded={loaded ? 'true' : undefined}
         onLoad={() => setLoaded(true)}
+        onError={() => {
+          if (retried) return;
+          const bypass = makeMediaCacheBypassUrl(resolved);
+          if (!bypass) return;
+          setRetried(true);
+          setResolved(bypass);
+        }}
       />
     </>
   );

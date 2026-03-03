@@ -47,3 +47,34 @@ export function resolvePublicUrl(input: string): string {
 
   return resolved;
 }
+
+// Some CDNs / edge caches can temporarily cache a 404 for newly deployed public media paths.
+// If a client hits that cached 404, retrying with a semantically equivalent pathname variant
+// can bypass the cache key and succeed (if the origin already has the file).
+//
+// This intentionally returns an absolute URL and inserts a double slash after the origin:
+//   https://example.com/media/x.png  -> https://example.com//media/x.png
+export function makeMediaCacheBypassUrl(resolvedUrl: string): string | null {
+  if (typeof window === 'undefined') return null;
+
+  const raw = String(resolvedUrl ?? '').trim();
+  if (!raw) return null;
+  if (raw.startsWith('local-media:')) return null;
+  if (raw.startsWith('data:')) return null;
+  if (raw.startsWith('blob:')) return null;
+
+  let u: URL;
+  try {
+    u = new URL(raw, window.location.origin);
+  } catch {
+    return null;
+  }
+
+  // Only retry same-origin media paths.
+  if (u.origin !== window.location.origin) return null;
+  if (!u.pathname.includes('/media/')) return null;
+
+  const pathNoLeading = u.pathname.replace(/^\/+/, '');
+  const doubled = `${u.origin}//${pathNoLeading}${u.search}${u.hash}`;
+  return doubled === u.href ? null : doubled;
+}

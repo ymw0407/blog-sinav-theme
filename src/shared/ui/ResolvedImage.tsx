@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import { loadLocalMedia } from '../../app/local/mediaStore';
-import { resolvePublicUrl } from '../lib/url';
+import { makeMediaCacheBypassUrl, resolvePublicUrl } from '../lib/url';
 
 type Props = React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
@@ -15,14 +15,16 @@ export default function ResolvedImage({ src, ...rest }: Props) {
   const [near, setNear] = React.useState(() => !isLocal);
   const [resolved, setResolved] = React.useState<string>(() => (isLocal ? EMPTY_IMG : resolvePublicUrl(src)));
   const [loaded, setLoaded] = React.useState(false);
+  const [retried, setRetried] = React.useState(false);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
-  const { className, onLoad, ...imgProps } = rest;
+  const { className, onLoad, onError, ...imgProps } = rest;
 
   React.useEffect(() => {
     const local = src.startsWith('local-media:');
     setNear(!local);
     setResolved(local ? EMPTY_IMG : resolvePublicUrl(src));
+    setRetried(false);
   }, [src]);
 
   React.useEffect(() => {
@@ -87,6 +89,17 @@ export default function ResolvedImage({ src, ...rest }: Props) {
       onLoad={(e) => {
         setLoaded(true);
         onLoad?.(e);
+      }}
+      onError={(e) => {
+        if (!retried) {
+          const bypass = makeMediaCacheBypassUrl(resolved);
+          if (bypass) {
+            setRetried(true);
+            setResolved(bypass);
+            return;
+          }
+        }
+        onError?.(e);
       }}
       decoding={(imgProps as any).decoding ?? 'async'}
       {...imgProps}

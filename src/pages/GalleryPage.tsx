@@ -665,7 +665,13 @@ export default function GalleryPage() {
                 <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
                   Intent (optional)
                 </div>
-                <input className="input" value={addIntent} onChange={(e) => setAddIntent(e.target.value)} disabled={adding} />
+                <textarea
+                  className="textarea"
+                  value={addIntent}
+                  onChange={(e) => setAddIntent(e.target.value)}
+                  disabled={adding}
+                  style={{ minHeight: 90 }}
+                />
               </div>
               <div className="row" style={{ gap: 10 }}>
                 <div style={{ flex: 1 }}>
@@ -873,7 +879,13 @@ export default function GalleryPage() {
                 <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
                   Intent (optional)
                 </div>
-                <input className="input" value={editIntent} onChange={(e) => setEditIntent(e.target.value)} disabled={adding} />
+                <textarea
+                  className="textarea"
+                  value={editIntent}
+                  onChange={(e) => setEditIntent(e.target.value)}
+                  disabled={adding}
+                  style={{ minHeight: 90 }}
+                />
               </div>
               <div className="row" style={{ gap: 10, alignItems: 'flex-end' }}>
                 <div style={{ flex: 1, minWidth: 220 }}>

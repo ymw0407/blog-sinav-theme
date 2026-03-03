@@ -306,6 +306,13 @@ export default function PortfolioEditorPage() {
 
   const [p, setP] = React.useState<Portfolio>(() => normalizePortfolio(getPortfolioIndex().portfolio));
   const [saving, setSaving] = React.useState(false);
+  const [uploadingCount, setUploadingCount] = React.useState(0);
+  const [heldPreviewByRemoteSrc, setHeldPreviewByRemoteSrc] = React.useState<Record<string, string>>({});
+
+  const resolvePreviewSrc = React.useCallback((src: string | undefined) => {
+    if (!src) return src;
+    return heldPreviewByRemoteSrc[src] ?? src;
+  }, [heldPreviewByRemoteSrc]);
 
   const [skillsText, setSkillsText] = React.useState(() => (p.skills ?? []).join(', '));
   const [workStacksText, setWorkStacksText] = React.useState<Record<number, string>>(() => {
@@ -417,6 +424,36 @@ export default function PortfolioEditorPage() {
     });
   }
 
+  async function pickImageWithHeldPreview(params: {
+    file: File;
+    scope: 'profile' | 'project' | 'cover' | 'work' | 'award' | 'certificate' | 'education' | 'publication';
+    scopeId?: string;
+    setHeld: (heldSrc: string) => void;
+    setRemote: (remoteSrc: string) => void;
+    revert: () => void;
+  }) {
+    if (local) {
+      const src = await uploadImage(params);
+      params.setRemote(src);
+      return;
+    }
+
+    const heldSrc = await saveLocalImage(params.file);
+    params.setHeld(heldSrc);
+
+    setUploadingCount((c) => c + 1);
+    try {
+      const remoteSrc = await uploadImage(params);
+      setHeldPreviewByRemoteSrc((prev) => ({ ...prev, [remoteSrc]: heldSrc }));
+      params.setRemote(remoteSrc);
+    } catch (e) {
+      params.revert();
+      alert(e instanceof Error ? e.message : String(e));
+    } finally {
+      setUploadingCount((c) => Math.max(0, c - 1));
+    }
+  }
+
   async function save() {
     setSaving(true);
     try {
@@ -485,12 +522,22 @@ export default function PortfolioEditorPage() {
               hint="Crops to 16:6"
               preview={
                 <div className="profileCoverFrame" style={{ aspectRatio: '16 / 6' }}>
-                  {p.cover?.src ? <ResolvedImage src={p.cover.src} alt={p.cover.alt ?? p.name ?? 'Cover'} className="profileCoverImg" /> : <div />}
+                  {p.cover?.src ? <ResolvedImage src={resolvePreviewSrc(p.cover.src) ?? p.cover.src} alt={p.cover.alt ?? p.name ?? 'Cover'} className="profileCoverImg" /> : <div />}
                 </div>
               }
               onPick={async (f) => {
-                const src = await uploadImage({ file: f, scope: 'cover' });
-                setP((prev) => ({ ...prev, cover: { src, alt: prev.cover?.alt } }));
+                const prevSrc = p.cover?.src;
+                await pickImageWithHeldPreview({
+                  file: f,
+                  scope: 'cover',
+                  setHeld: (heldSrc) => setP((prev) => ({ ...prev, cover: { src: heldSrc, alt: prev.cover?.alt } })),
+                  setRemote: (remoteSrc) => setP((prev) => ({ ...prev, cover: { src: remoteSrc, alt: prev.cover?.alt } })),
+                  revert: () =>
+                    setP((prev) => ({
+                      ...prev,
+                      cover: prevSrc ? { src: prevSrc, alt: prev.cover?.alt } : undefined
+                    }))
+                });
               }}
             />
             <div className="row" style={{ justifyContent: 'flex-end', marginTop: 10, gap: 8, flexWrap: 'wrap' }}>
@@ -521,12 +568,22 @@ export default function PortfolioEditorPage() {
               hint="Crops to 4:5"
               preview={
                 <div className="profilePhotoFrame" style={{ aspectRatio: '4 / 5' }}>
-                  {p.photo?.src ? <ResolvedImage src={p.photo.src} alt={p.photo.alt ?? p.name ?? 'Profile'} className="profilePhotoImg" /> : <div />}
+                  {p.photo?.src ? <ResolvedImage src={resolvePreviewSrc(p.photo.src) ?? p.photo.src} alt={p.photo.alt ?? p.name ?? 'Profile'} className="profilePhotoImg" /> : <div />}
                 </div>
               }
               onPick={async (f) => {
-                const src = await uploadImage({ file: f, scope: 'profile' });
-                setP((prev) => ({ ...prev, photo: { src, alt: prev.photo?.alt } }));
+                const prevSrc = p.photo?.src;
+                await pickImageWithHeldPreview({
+                  file: f,
+                  scope: 'profile',
+                  setHeld: (heldSrc) => setP((prev) => ({ ...prev, photo: { src: heldSrc, alt: prev.photo?.alt } })),
+                  setRemote: (remoteSrc) => setP((prev) => ({ ...prev, photo: { src: remoteSrc, alt: prev.photo?.alt } })),
+                  revert: () =>
+                    setP((prev) => ({
+                      ...prev,
+                      photo: prevSrc ? { src: prevSrc, alt: prev.photo?.alt } : undefined
+                    }))
+                });
               }}
             />
             <div className="row" style={{ justifyContent: 'flex-end', marginTop: 10, gap: 8, flexWrap: 'wrap' }}>
@@ -870,18 +927,41 @@ export default function PortfolioEditorPage() {
                             preview={
                               <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
                                 {a.logo?.src ? (
-                                  <ResolvedImage src={a.logo.src} alt={a.logo.alt ?? a.title} className="profileWorkLogoPreviewImg" loading="lazy" />
+                                  <ResolvedImage
+                                    src={resolvePreviewSrc(a.logo.src) ?? a.logo.src}
+                                    alt={a.logo.alt ?? a.title}
+                                    className="profileWorkLogoPreviewImg"
+                                    loading="lazy"
+                                  />
                                 ) : (
                                   <div />
                                 )}
                               </div>
                             }
                             onPick={async (f) => {
-                              const src = await uploadImage({ file: f, scope: 'award', scopeId });
-                              setP((prev) => {
-                                const next = [...(prev.awards ?? [])];
-                                next[idx] = { ...next[idx], logo: { src, alt: next[idx]?.logo?.alt } };
-                                return { ...prev, awards: next };
+                              const prevSrc = a.logo?.src;
+                              await pickImageWithHeldPreview({
+                                file: f,
+                                scope: 'award',
+                                scopeId,
+                                setHeld: (heldSrc) =>
+                                  setP((prev) => {
+                                    const next = [...(prev.awards ?? [])];
+                                    next[idx] = { ...next[idx], logo: { src: heldSrc, alt: next[idx]?.logo?.alt } };
+                                    return { ...prev, awards: next };
+                                  }),
+                                setRemote: (remoteSrc) =>
+                                  setP((prev) => {
+                                    const next = [...(prev.awards ?? [])];
+                                    next[idx] = { ...next[idx], logo: { src: remoteSrc, alt: next[idx]?.logo?.alt } };
+                                    return { ...prev, awards: next };
+                                  }),
+                                revert: () =>
+                                  setP((prev) => {
+                                    const next = [...(prev.awards ?? [])];
+                                    next[idx] = { ...next[idx], logo: prevSrc ? { src: prevSrc, alt: next[idx]?.logo?.alt } : undefined };
+                                    return { ...prev, awards: next };
+                                  })
                               });
                             }}
                           />
@@ -1183,18 +1263,41 @@ export default function PortfolioEditorPage() {
                             preview={
                               <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
                                 {a.logo?.src ? (
-                                  <ResolvedImage src={a.logo.src} alt={a.logo.alt ?? a.title} className="profileWorkLogoPreviewImg" loading="lazy" />
+                                  <ResolvedImage
+                                    src={resolvePreviewSrc(a.logo.src) ?? a.logo.src}
+                                    alt={a.logo.alt ?? a.title}
+                                    className="profileWorkLogoPreviewImg"
+                                    loading="lazy"
+                                  />
                                 ) : (
                                   <div />
                                 )}
                               </div>
                             }
                             onPick={async (f) => {
-                              const src = await uploadImage({ file: f, scope: 'certificate', scopeId });
-                              setP((prev) => {
-                                const next = [...(prev.certificates ?? [])];
-                                next[idx] = { ...next[idx], logo: { src, alt: next[idx]?.logo?.alt ?? f.name } };
-                                return { ...prev, certificates: next };
+                              const prevSrc = a.logo?.src;
+                              await pickImageWithHeldPreview({
+                                file: f,
+                                scope: 'certificate',
+                                scopeId,
+                                setHeld: (heldSrc) =>
+                                  setP((prev) => {
+                                    const next = [...(prev.certificates ?? [])];
+                                    next[idx] = { ...next[idx], logo: { src: heldSrc, alt: next[idx]?.logo?.alt ?? f.name } };
+                                    return { ...prev, certificates: next };
+                                  }),
+                                setRemote: (remoteSrc) =>
+                                  setP((prev) => {
+                                    const next = [...(prev.certificates ?? [])];
+                                    next[idx] = { ...next[idx], logo: { src: remoteSrc, alt: next[idx]?.logo?.alt ?? f.name } };
+                                    return { ...prev, certificates: next };
+                                  }),
+                                revert: () =>
+                                  setP((prev) => {
+                                    const next = [...(prev.certificates ?? [])];
+                                    next[idx] = { ...next[idx], logo: prevSrc ? { src: prevSrc, alt: next[idx]?.logo?.alt ?? f.name } : undefined };
+                                    return { ...prev, certificates: next };
+                                  })
                               });
                             }}
                           />
@@ -1493,18 +1596,41 @@ export default function PortfolioEditorPage() {
                             preview={
                               <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
                                 {e.logo?.src ? (
-                                  <ResolvedImage src={e.logo.src} alt={e.logo.alt ?? e.school} className="profileWorkLogoPreviewImg" loading="lazy" />
+                                  <ResolvedImage
+                                    src={resolvePreviewSrc(e.logo.src) ?? e.logo.src}
+                                    alt={e.logo.alt ?? e.school}
+                                    className="profileWorkLogoPreviewImg"
+                                    loading="lazy"
+                                  />
                                 ) : (
                                   <div />
                                 )}
                               </div>
                             }
                             onPick={async (f) => {
-                              const src = await uploadImage({ file: f, scope: 'education', scopeId });
-                              setP((prev) => {
-                                const next = [...(prev.education ?? [])];
-                                next[idx] = { ...next[idx], logo: { src, alt: next[idx]?.logo?.alt } };
-                                return { ...prev, education: next };
+                              const prevSrc = e.logo?.src;
+                              await pickImageWithHeldPreview({
+                                file: f,
+                                scope: 'education',
+                                scopeId,
+                                setHeld: (heldSrc) =>
+                                  setP((prev) => {
+                                    const next = [...(prev.education ?? [])];
+                                    next[idx] = { ...next[idx], logo: { src: heldSrc, alt: next[idx]?.logo?.alt } };
+                                    return { ...prev, education: next };
+                                  }),
+                                setRemote: (remoteSrc) =>
+                                  setP((prev) => {
+                                    const next = [...(prev.education ?? [])];
+                                    next[idx] = { ...next[idx], logo: { src: remoteSrc, alt: next[idx]?.logo?.alt } };
+                                    return { ...prev, education: next };
+                                  }),
+                                revert: () =>
+                                  setP((prev) => {
+                                    const next = [...(prev.education ?? [])];
+                                    next[idx] = { ...next[idx], logo: prevSrc ? { src: prevSrc, alt: next[idx]?.logo?.alt } : undefined };
+                                    return { ...prev, education: next };
+                                  })
                               });
                             }}
                           />
@@ -1817,18 +1943,41 @@ export default function PortfolioEditorPage() {
                           preview={
                             <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
                               {pub.logo?.src ? (
-                                <ResolvedImage src={pub.logo.src} alt={pub.logo.alt ?? pub.title} className="profileWorkLogoPreviewImg" loading="lazy" />
+                                <ResolvedImage
+                                  src={resolvePreviewSrc(pub.logo.src) ?? pub.logo.src}
+                                  alt={pub.logo.alt ?? pub.title}
+                                  className="profileWorkLogoPreviewImg"
+                                  loading="lazy"
+                                />
                               ) : (
                                 <div />
                               )}
                             </div>
                           }
                           onPick={async (f) => {
-                            const src = await uploadImage({ file: f, scope: 'publication', scopeId });
-                            setP((prev) => {
-                              const next = [...(prev.publications ?? [])];
-                              next[idx] = { ...next[idx], logo: { src, alt: next[idx]?.logo?.alt ?? f.name } };
-                              return { ...prev, publications: next };
+                            const prevSrc = pub.logo?.src;
+                            await pickImageWithHeldPreview({
+                              file: f,
+                              scope: 'publication',
+                              scopeId,
+                              setHeld: (heldSrc) =>
+                                setP((prev) => {
+                                  const next = [...(prev.publications ?? [])];
+                                  next[idx] = { ...next[idx], logo: { src: heldSrc, alt: next[idx]?.logo?.alt ?? f.name } };
+                                  return { ...prev, publications: next };
+                                }),
+                              setRemote: (remoteSrc) =>
+                                setP((prev) => {
+                                  const next = [...(prev.publications ?? [])];
+                                  next[idx] = { ...next[idx], logo: { src: remoteSrc, alt: next[idx]?.logo?.alt ?? f.name } };
+                                  return { ...prev, publications: next };
+                                }),
+                              revert: () =>
+                                setP((prev) => {
+                                  const next = [...(prev.publications ?? [])];
+                                  next[idx] = { ...next[idx], logo: prevSrc ? { src: prevSrc, alt: next[idx]?.logo?.alt ?? f.name } : undefined };
+                                  return { ...prev, publications: next };
+                                })
                             });
                           }}
                         />
@@ -2159,18 +2308,41 @@ export default function PortfolioEditorPage() {
                           preview={
                             <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
                               {w.logo?.src ? (
-                                <ResolvedImage src={w.logo.src} alt={w.logo.alt ?? `${w.org} logo`} className="profileWorkLogoPreviewImg" loading="lazy" />
+                                <ResolvedImage
+                                  src={resolvePreviewSrc(w.logo.src) ?? w.logo.src}
+                                  alt={w.logo.alt ?? `${w.org} logo`}
+                                  className="profileWorkLogoPreviewImg"
+                                  loading="lazy"
+                                />
                               ) : (
                                 <div />
                               )}
                             </div>
                           }
                           onPick={async (f) => {
-                            const src = await uploadImage({ file: f, scope: 'work', scopeId });
-                            setP((prev) => {
-                              const next = [...(prev.work ?? [])];
-                              next[idx] = { ...next[idx], logo: { src, alt: next[idx]?.logo?.alt ?? f.name } };
-                              return { ...prev, work: next };
+                            const prevSrc = w.logo?.src;
+                            await pickImageWithHeldPreview({
+                              file: f,
+                              scope: 'work',
+                              scopeId,
+                              setHeld: (heldSrc) =>
+                                setP((prev) => {
+                                  const next = [...(prev.work ?? [])];
+                                  next[idx] = { ...next[idx], logo: { src: heldSrc, alt: next[idx]?.logo?.alt ?? f.name } };
+                                  return { ...prev, work: next };
+                                }),
+                              setRemote: (remoteSrc) =>
+                                setP((prev) => {
+                                  const next = [...(prev.work ?? [])];
+                                  next[idx] = { ...next[idx], logo: { src: remoteSrc, alt: next[idx]?.logo?.alt ?? f.name } };
+                                  return { ...prev, work: next };
+                                }),
+                              revert: () =>
+                                setP((prev) => {
+                                  const next = [...(prev.work ?? [])];
+                                  next[idx] = { ...next[idx], logo: prevSrc ? { src: prevSrc, alt: next[idx]?.logo?.alt ?? f.name } : undefined };
+                                  return { ...prev, work: next };
+                                })
                             });
                           }}
                         />
@@ -2547,15 +2719,45 @@ export default function PortfolioEditorPage() {
                           hint="Shows as 136×104"
                           preview={
                             <div className="projectMediaFrame">
-                              {cover?.src ? <ResolvedImage src={cover.src} alt={cover.alt ?? proj.title} className="projectMediaImg" loading="lazy" /> : <div />}
+                              {cover?.src ? (
+                                <ResolvedImage
+                                  src={resolvePreviewSrc(cover.src) ?? cover.src}
+                                  alt={cover.alt ?? proj.title}
+                                  className="projectMediaImg"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div />
+                              )}
                             </div>
                           }
                           onPick={async (f) => {
-                            const src = await uploadImage({ file: f, scope: 'project', scopeId });
-                            setP((prev) => {
-                              const next = [...prev.projects];
-                              next[projIdx] = { ...next[projIdx], media: [{ src, alt: next[projIdx]?.media?.[0]?.alt ?? f.name }] };
-                              return { ...prev, projects: next };
+                            const prevSrc = cover?.src;
+                            await pickImageWithHeldPreview({
+                              file: f,
+                              scope: 'project',
+                              scopeId,
+                              setHeld: (heldSrc) =>
+                                setP((prev) => {
+                                  const next = [...prev.projects];
+                                  next[projIdx] = { ...next[projIdx], media: [{ src: heldSrc, alt: next[projIdx]?.media?.[0]?.alt ?? f.name }] };
+                                  return { ...prev, projects: next };
+                                }),
+                              setRemote: (remoteSrc) =>
+                                setP((prev) => {
+                                  const next = [...prev.projects];
+                                  next[projIdx] = { ...next[projIdx], media: [{ src: remoteSrc, alt: next[projIdx]?.media?.[0]?.alt ?? f.name }] };
+                                  return { ...prev, projects: next };
+                                }),
+                              revert: () =>
+                                setP((prev) => {
+                                  const next = [...prev.projects];
+                                  next[projIdx] = {
+                                    ...next[projIdx],
+                                    media: prevSrc ? [{ src: prevSrc, alt: next[projIdx]?.media?.[0]?.alt ?? f.name }] : []
+                                  };
+                                  return { ...prev, projects: next };
+                                })
                             });
                           }}
                         />
@@ -2610,8 +2812,8 @@ export default function PortfolioEditorPage() {
           <Link to="/resume" className="pill">
             Cancel
           </Link>
-          <button className="btn primary" disabled={saving || !canWrite} onClick={() => save()} type="button">
-            {saving ? 'Saving...' : 'Save'}
+          <button className="btn primary" disabled={saving || uploadingCount > 0 || !canWrite} onClick={() => save()} type="button">
+            {saving ? 'Saving...' : uploadingCount > 0 ? 'Uploading...' : 'Save'}
           </button>
         </div>
       </div>
@@ -2665,18 +2867,44 @@ export default function PortfolioEditorPage() {
                             preview={
                               <div className="projectModalHero">
                                 {cover?.src ? (
-                                  <ResolvedImage src={cover.src} alt={cover.alt ?? proj.title} className="projectModalHeroImg" loading="lazy" />
+                                  <ResolvedImage
+                                    src={resolvePreviewSrc(cover.src) ?? cover.src}
+                                    alt={cover.alt ?? proj.title}
+                                    className="projectModalHeroImg"
+                                    loading="lazy"
+                                  />
                                 ) : (
                                   <div />
                                 )}
                               </div>
                             }
                             onPick={async (f) => {
-                              const src = await uploadImage({ file: f, scope: 'project', scopeId });
-                              setP((prev) => {
-                                const next = [...prev.projects];
-                                next[projectEditorIndex] = { ...next[projectEditorIndex], media: [{ src, alt: next[projectEditorIndex]?.media?.[0]?.alt ?? f.name }] };
-                                return { ...prev, projects: next };
+                              const prevSrc = cover?.src;
+                              await pickImageWithHeldPreview({
+                                file: f,
+                                scope: 'project',
+                                scopeId,
+                                setHeld: (heldSrc) =>
+                                  setP((prev) => {
+                                    const next = [...prev.projects];
+                                    next[projectEditorIndex] = { ...next[projectEditorIndex], media: [{ src: heldSrc, alt: next[projectEditorIndex]?.media?.[0]?.alt ?? f.name }] };
+                                    return { ...prev, projects: next };
+                                  }),
+                                setRemote: (remoteSrc) =>
+                                  setP((prev) => {
+                                    const next = [...prev.projects];
+                                    next[projectEditorIndex] = { ...next[projectEditorIndex], media: [{ src: remoteSrc, alt: next[projectEditorIndex]?.media?.[0]?.alt ?? f.name }] };
+                                    return { ...prev, projects: next };
+                                  }),
+                                revert: () =>
+                                  setP((prev) => {
+                                    const next = [...prev.projects];
+                                    next[projectEditorIndex] = {
+                                      ...next[projectEditorIndex],
+                                      media: prevSrc ? [{ src: prevSrc, alt: next[projectEditorIndex]?.media?.[0]?.alt ?? f.name }] : []
+                                    };
+                                    return { ...prev, projects: next };
+                                  })
                               });
                             }}
                           />

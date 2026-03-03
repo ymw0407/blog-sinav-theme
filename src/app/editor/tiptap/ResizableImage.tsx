@@ -2,7 +2,7 @@ import React from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 import { loadLocalMedia } from '../../local/mediaStore';
 import { vars } from '../../../styles/tokens/theme.css';
-import { resolvePublicUrl } from '../../../shared/lib/url';
+import { makeMediaCacheBypassUrl, resolvePublicUrl } from '../../../shared/lib/url';
 
 function useResolvedSrc(src: string | undefined) {
   const [resolved, setResolved] = React.useState<string | null>(null);
@@ -37,6 +37,7 @@ export default function ResizableImage(props: NodeViewProps) {
   const xAttr = typeof (node.attrs as any).x === 'number' ? Number((node.attrs as any).x) : null;
 
   const resolvedSrc = useResolvedSrc(src);
+  const [errorBypassSrc, setErrorBypassSrc] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const frameRef = React.useRef<HTMLDivElement | null>(null);
   const dragState = React.useRef<{
@@ -65,6 +66,10 @@ export default function ResizableImage(props: NodeViewProps) {
           : 0.5;
   const availablePct = Math.max(0, 100 - wPct);
   const offsetPct = availablePct <= 0 ? 0 : Math.max(0, Math.min(availablePct, baseX * availablePct));
+
+  React.useEffect(() => {
+    setErrorBypassSrc(null);
+  }, [src]);
 
   function clampPct(p: number) {
     return Math.max(20, Math.min(100, Math.round(p)));
@@ -223,10 +228,16 @@ export default function ResizableImage(props: NodeViewProps) {
         >
           {resolvedSrc ? (
             <img
-              src={resolvedSrc}
+              src={errorBypassSrc ?? resolvedSrc}
               alt={alt}
               className="tiptapImageEl"
               draggable={false}
+              onError={() => {
+                if (errorBypassSrc) return;
+                const bypass = makeMediaCacheBypassUrl(resolvedSrc);
+                if (!bypass) return;
+                setErrorBypassSrc(bypass);
+              }}
             />
           ) : (
             <div className="muted">Image missing.</div>

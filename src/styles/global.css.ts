@@ -2550,7 +2550,15 @@ globalStyle('html:not([data-theme="dark"]) .exhibitAside .btn.primary', {
 
 globalStyle('.exhibitWorkTitle', { margin: '2px 0 0', fontSize: 22, letterSpacing: '-0.02em' });
 
-globalStyle('.exhibitIntent', { margin: 0, color: 'rgba(231,237,247,.78)', lineHeight: 1.7 });
+globalStyle('.exhibitIntent', {
+  margin: 0,
+  minWidth: 0,
+  color: 'rgba(231,237,247,.78)',
+  lineHeight: 1.7,
+  whiteSpace: 'pre-wrap',
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word'
+});
 
 globalStyle('html:not([data-theme="dark"]) .exhibitIntent', {
   color: `color-mix(in srgb, ${vars.color.fg} 72%, ${vars.color.muted})`
@@ -2584,7 +2592,9 @@ globalStyle('html:not([data-theme="dark"]) .exhibitMetaVal', {
 
 globalStyle('.exhibitMetaNote', {
   whiteSpace: 'pre-wrap',
-  lineHeight: 1.55
+  lineHeight: 1.55,
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word'
 });
 
 globalStyle('.exhibitWall', {
@@ -4115,7 +4125,10 @@ globalStyle('.lightboxMetaTitle', {
 globalStyle('.lightboxMetaIntent', {
   fontSize: 15,
   lineHeight: 1.7,
-  color: 'rgba(255,255,255,.82)'
+  color: 'rgba(255,255,255,.82)',
+  whiteSpace: 'pre-wrap',
+  overflowWrap: 'anywhere',
+  wordBreak: 'break-word'
 });
 
 globalStyle('html:not([data-theme="dark"]) .lightboxMetaIntent', {
