@@ -2,6 +2,8 @@ export function resolvePublicUrl(input: string): string {
   const src = String(input ?? '').trim();
   if (!src) return src;
 
+  const assetVersion = String((import.meta as any)?.env?.VITE_ASSET_VERSION ?? '').trim();
+
   // Special schemes handled elsewhere or already self-contained.
   if (src.startsWith('local-media:')) return src;
   if (src.startsWith('data:')) return src;
@@ -23,6 +25,18 @@ export function resolvePublicUrl(input: string): string {
   }
 
   // Plain relative path: treat as public asset under BASE_URL.
-  return `${baseNorm}${src.replace(/^\.?\//, '')}`;
-}
+  const resolved = `${baseNorm}${src.replace(/^\.?\//, '')}`;
 
+  // Cache-bust for public assets (not fingerprinted like Vite's /assets/*).
+  // Helps when a fresh upload briefly 404s before redeploy and the CDN caches the 404.
+  if (assetVersion) {
+    const isPublicMedia = resolved.startsWith(`${baseNorm}media/`) || (baseNorm === '/' && resolved.startsWith('/media/'));
+    if (isPublicMedia && !resolved.includes('v=')) {
+      const [base, hash] = resolved.split('#', 2);
+      const sep = base.includes('?') ? '&' : '?';
+      return `${base}${sep}v=${encodeURIComponent(assetVersion)}${hash ? `#${hash}` : ''}`;
+    }
+  }
+
+  return resolved;
+}
