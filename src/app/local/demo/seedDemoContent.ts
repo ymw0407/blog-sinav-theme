@@ -231,7 +231,7 @@ export function seedDemoContent({ force = false } = {}) {
         role: 'Owner',
         period: { from: '2026-01-01' },
         description: '2-Repo + PKCE + Octokit + 정적 인덱스 기반의 개인 블로그 플랫폼',
-        links: [{ label: 'Docs', url: '#/about' }]
+        links: [{ label: 'Docs', url: '/about' }]
       }
     ]
   };

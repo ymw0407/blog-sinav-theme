@@ -22,39 +22,9 @@ const MotionPage = React.lazy(() => import('./pages/MotionPage'));
 const TypographyPage = React.lazy(() => import('./pages/TypographyPage'));
 const TimelinePage = React.lazy(() => import('./pages/TimelinePage'));
 
-function OAuthBootstrap() {
-  // HashRouter를 쓰되, OAuth redirect URI는 fragment 없이도 동작하도록 지원한다.
-  // 예: https://<pages>/?code=...&state=...
-  // → 해시 라우트만 callback으로 이동시키고, query는 그대로 두어 AuthCallbackPage에서 처리한다.
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const hasOauthParams = Boolean(params.get('code') || params.get('error'));
-    if (!hasOauthParams) return;
-    try {
-      sessionStorage.setItem('blog.oauth.query', window.location.search.replace(/^\\?/, ''));
-    } catch {
-      // ignore
-    }
-    // Move OAuth params into the hash (so the callback page can read them),
-    // then strip them from the querystring to avoid trapping navigation.
-    const query = window.location.search.replace(/^\\?/, '');
-    const nextHash = query ? `#/auth/callback?${query}` : '#/auth/callback';
-    if (!window.location.hash.startsWith('#/auth/callback')) {
-      window.location.hash = nextHash;
-    } else if (query && !window.location.hash.includes('?')) {
-      window.location.hash = nextHash;
-    }
-
-    const cleanUrl = `${window.location.pathname}${window.location.hash || ''}`;
-    window.history.replaceState({}, document.title, cleanUrl);
-  }, []);
-  return null;
-}
-
 export default function App() {
   return (
     <>
-      <OAuthBootstrap />
       <AppShell>
         <React.Suspense
           fallback={

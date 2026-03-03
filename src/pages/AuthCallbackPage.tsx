@@ -10,17 +10,6 @@ function readOAuthParams(): { code: string | null; state: string | null; error: 
   let error = urlParams.get('error');
 
   if (!code && !error) {
-    // App.tsx stashes the query then strips it from the URL.
-    const stashed = sessionStorage.getItem('blog.oauth.query') || '';
-    if (stashed) {
-      const stashedParams = new URLSearchParams(stashed);
-      code = stashedParams.get('code');
-      state = stashedParams.get('state');
-      error = stashedParams.get('error');
-    }
-  }
-
-  if (!code && !error) {
     // Fallback: support `#/auth/callback?code=...&state=...`
     const hash = window.location.hash || '';
     const qIndex = hash.indexOf('?');
@@ -36,10 +25,10 @@ function readOAuthParams(): { code: string | null; state: string | null; error: 
 }
 
 function stripOAuthParamsFromUrl() {
-  // Keep the current hash path, but strip any hash query.
-  const hash = window.location.hash || '';
-  const hashPath = hash.includes('?') ? hash.slice(0, hash.indexOf('?')) : hash;
-  window.history.replaceState({}, document.title, `${window.location.pathname}${hashPath}`);
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname);
 }
 
 export default function AuthCallbackPage() {
@@ -56,11 +45,6 @@ export default function AuthCallbackPage() {
     const returnTo = readReturnTo();
 
     // Do this ASAP so the app isn't trapped behind `?code=...`.
-    try {
-      sessionStorage.removeItem('blog.oauth.query');
-    } catch {
-      // ignore
-    }
     stripOAuthParamsFromUrl();
 
     (async () => {
@@ -94,4 +78,3 @@ export default function AuthCallbackPage() {
     </div>
   );
 }
-
