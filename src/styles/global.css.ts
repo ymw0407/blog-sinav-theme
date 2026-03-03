@@ -3285,6 +3285,29 @@ globalStyle('.resumeEditEntry[open] .resumeEditSummary', {
 
 globalStyle('.resumeEditDetails', { padding: 12 });
 
+globalStyle('.resumeEditGrid2', {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: 10,
+  '@media': {
+    'screen and (max-width: 640px)': { gridTemplateColumns: 'minmax(0, 1fr)' }
+  }
+});
+
+globalStyle('.resumeEditLinkGrid', {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr) auto',
+  gap: 10,
+  alignItems: 'center',
+  '@media': {
+    'screen and (max-width: 640px)': { gridTemplateColumns: 'minmax(0, 1fr)' }
+  }
+});
+
+globalStyle('.resumeEditLinkRemove', {
+  justifySelf: 'start'
+});
+
 globalStyle('.resumeSaveBar', {
   position: 'sticky',
   bottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',

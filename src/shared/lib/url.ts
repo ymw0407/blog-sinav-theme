@@ -1,5 +1,5 @@
 export function resolvePublicUrl(input: string): string {
-  const src = String(input ?? '').trim();
+  let src = String(input ?? '').trim();
   if (!src) return src;
 
   const assetVersion = String((import.meta as any)?.env?.VITE_ASSET_VERSION ?? '').trim();
@@ -11,6 +11,13 @@ export function resolvePublicUrl(input: string): string {
 
   // Absolute URLs: http(s), etc.
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(src)) return src;
+
+  // Back-compat: some older content mistakenly used `media/asset/...` (singular).
+  // Public folder path is `media/assets/...` (plural).
+  if (src.startsWith('media/asset/')) src = `media/assets/${src.slice('media/asset/'.length)}`;
+  else if (src === 'media/asset') src = 'media/assets';
+  else if (src.startsWith('/media/asset/')) src = `/media/assets/${src.slice('/media/asset/'.length)}`;
+  else if (src === '/media/asset') src = '/media/assets';
 
   const base = String(import.meta.env.BASE_URL || '/');
   const baseNorm = base.endsWith('/') ? base : `${base}/`;

@@ -2016,8 +2016,8 @@ export default function PortfolioEditorPage() {
                     </summary>
 
                     <div className="resumeEditDetails" style={{ display: 'grid', gap: 10 }}>
-                      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-                        <div style={{ flex: 1, minWidth: 220 }}>
+                      <div className="resumeEditGrid2">
+                        <div>
                           <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
                             Organization
                           </div>
@@ -2034,7 +2034,7 @@ export default function PortfolioEditorPage() {
                             disabled={saving}
                           />
                         </div>
-                        <div style={{ flex: 1, minWidth: 220 }}>
+                        <div>
                           <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
                             Title / Role
                           </div>
@@ -2053,19 +2053,18 @@ export default function PortfolioEditorPage() {
                         </div>
                       </div>
 
-                      <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
-                        <div style={{ flex: 1, minWidth: 220 }}>
+                      <div className="resumeEditGrid2">
+                        <div>
                           <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
                             Period (optional, dates only)
                           </div>
                           {(() => {
                             const { start, end } = readPeriodDates(w.period);
                             return (
-                              <div className="row" style={{ gap: 10, flexWrap: 'wrap' }}>
+                              <div className="resumeEditGrid2">
                                 <input
                                   className="input"
                                   type="date"
-                                  style={{ flex: 1, minWidth: 160 }}
                                   value={start}
                                   onChange={(e) =>
                                     setP((prev) => {
@@ -2080,7 +2079,6 @@ export default function PortfolioEditorPage() {
                                 <input
                                   className="input"
                                   type="date"
-                                  style={{ flex: 1, minWidth: 160 }}
                                   value={end}
                                   onChange={(e) =>
                                     setP((prev) => {
@@ -2096,7 +2094,7 @@ export default function PortfolioEditorPage() {
                             );
                           })()}
                         </div>
-                        <div style={{ flex: 1, minWidth: 220 }}>
+                        <div>
                           <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>
                             Location (optional)
                           </div>
@@ -2157,9 +2155,9 @@ export default function PortfolioEditorPage() {
                         <ImageDropzone
                           disabled={saving || !canWrite}
                           label="Drop a logo (or click to select)"
-                          hint="Shows as 16:9"
+                          hint="Shows as 1:1"
                           preview={
-                            <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '16 / 9' }}>
+                            <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
                               {w.logo?.src ? (
                                 <ResolvedImage src={w.logo.src} alt={w.logo.alt ?? `${w.org} logo`} className="profileWorkLogoPreviewImg" loading="lazy" />
                               ) : (
@@ -2199,10 +2197,9 @@ export default function PortfolioEditorPage() {
 
                       <div style={{ display: 'grid', gap: 10 }}>
                         {(w.links ?? []).map((l, linkIdx) => (
-                          <div key={linkIdx} className="row" style={{ gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                          <div key={linkIdx} className="resumeEditLinkGrid">
                             <input
                               className="input"
-                              style={{ flex: 1, minWidth: 160 }}
                               placeholder="Label"
                               value={l.label}
                               onChange={(e) =>
@@ -2218,7 +2215,6 @@ export default function PortfolioEditorPage() {
                             />
                             <input
                               className="input"
-                              style={{ flex: 2, minWidth: 220 }}
                               placeholder="https://..."
                               value={l.url}
                               onChange={(e) =>
@@ -2234,7 +2230,7 @@ export default function PortfolioEditorPage() {
                             />
                             <button
                               type="button"
-                              className="btn"
+                              className="btn resumeEditLinkRemove"
                               disabled={saving}
                               onClick={() =>
                                 setP((prev) => {
@@ -2548,10 +2544,10 @@ export default function PortfolioEditorPage() {
                         <ImageDropzone
                           disabled={saving || !canWrite}
                           label="Drop a cover image (or click to select)"
-                          hint="Shows as 16:10"
+                          hint="Shows as 136×104"
                           preview={
-                            <div className="profileMediaFrame" style={{ aspectRatio: '16 / 10' }}>
-                              {cover?.src ? <ResolvedImage src={cover.src} alt={cover.alt ?? proj.title} className="profileMediaImg" loading="lazy" /> : <div />}
+                            <div className="projectMediaFrame">
+                              {cover?.src ? <ResolvedImage src={cover.src} alt={cover.alt ?? proj.title} className="projectMediaImg" loading="lazy" /> : <div />}
                             </div>
                           }
                           onPick={async (f) => {

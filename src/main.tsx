@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './app/auth/AuthContext';
 import App from './App';
+import { reloadOnceForDynamicImportError } from './shared/lib/chunkReload';
 import './styles/global.css.ts';
 
 function normalizeInitialUrl() {
@@ -41,6 +42,17 @@ function normalizeInitialUrl() {
 }
 
 normalizeInitialUrl();
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (ev) => {
+    reloadOnceForDynamicImportError((ev as PromiseRejectionEvent).reason);
+  });
+
+  window.addEventListener('error', (ev) => {
+    const e = ev as ErrorEvent;
+    reloadOnceForDynamicImportError(e.error ?? e.message);
+  });
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
