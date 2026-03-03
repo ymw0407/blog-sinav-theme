@@ -3091,6 +3091,24 @@ globalStyle('.resumeMediaFrame', {
   placeItems: 'center'
 });
 
+// Awards/Certificates: typical document scans look better with an A4-ish landscape frame.
+globalStyle('.resumeMediaFrameA4', {
+  height: 96
+});
+
+// Alternative: A4 portrait (210x297) for document-like images.
+globalStyle('.resumeMediaEntryA4Portrait', {
+  gridTemplateColumns: '128px minmax(0, 1fr)',
+  '@media': {
+    'screen and (max-width: 620px)': { gridTemplateColumns: 'minmax(0, 1fr)' }
+  }
+});
+
+globalStyle('.resumeMediaFrameA4Portrait', {
+  width: 112,
+  height: 158
+});
+
 globalStyle('html:not([data-theme="dark"]) .resumeMediaFrame', {
   background: `linear-gradient(180deg, color-mix(in srgb, ${vars.color.card} 92%, #ffffff), ${vars.color.card})`,
   boxShadow: `inset 0 0 0 1px ${vars.color.border}, 0 1px 0 rgba(255,255,255,.55) inset`

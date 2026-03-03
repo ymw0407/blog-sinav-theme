@@ -533,7 +533,7 @@ export default function PortfolioPage() {
               <div className="profileSectionTitle">Awards</div>
               <div className="resumeEntryList">
                 {p.awards.map((a: any, i: number) => (
-                  <div className="resumeEntry resumeMediaEntry" key={i}>
+                  <div className="resumeEntry resumeMediaEntry resumeMediaEntryA4Portrait" key={i}>
                     <button
                       type="button"
                       className="resumeMediaBtn"
@@ -558,7 +558,7 @@ export default function PortfolioPage() {
                         });
                       }}
                     >
-                      <div className="resumeMediaFrame" aria-hidden="true">
+                      <div className="resumeMediaFrame resumeMediaFrameA4Portrait" aria-hidden="true">
                         {a.logo?.src ? <ResolvedImage src={a.logo.src} alt={a.logo.alt ?? a.title} className="resumeMediaImg" loading="lazy" /> : <div />}
                       </div>
                     </button>
@@ -596,7 +596,7 @@ export default function PortfolioPage() {
               <div className="profileSectionTitle">Certificates</div>
               <div className="resumeEntryList">
                 {p.certificates.map((a: any, i: number) => (
-                  <div className="resumeEntry resumeMediaEntry" key={i}>
+                  <div className="resumeEntry resumeMediaEntry resumeMediaEntryA4Portrait" key={i}>
                     <button
                       type="button"
                       className="resumeMediaBtn"
@@ -621,7 +621,7 @@ export default function PortfolioPage() {
                         });
                       }}
                     >
-                      <div className="resumeMediaFrame" aria-hidden="true">
+                      <div className="resumeMediaFrame resumeMediaFrameA4Portrait" aria-hidden="true">
                         {a.logo?.src ? <ResolvedImage src={a.logo.src} alt={a.logo.alt ?? a.title} className="resumeMediaImg" loading="lazy" /> : <div />}
                       </div>
                     </button>

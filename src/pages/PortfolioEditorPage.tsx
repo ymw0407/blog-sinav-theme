@@ -923,9 +923,9 @@ export default function PortfolioEditorPage() {
                           <ImageDropzone
                             disabled={saving || !canWrite}
                             label="Drop"
-                            hint="or click"
+                            hint="A4 portrait works best"
                             preview={
-                              <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
+                              <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '210 / 297', width: 120 }}>
                                 {a.logo?.src ? (
                                   <ResolvedImage
                                     src={resolvePreviewSrc(a.logo.src) ?? a.logo.src}
@@ -1259,9 +1259,9 @@ export default function PortfolioEditorPage() {
                           <ImageDropzone
                             disabled={saving || !canWrite}
                             label="Drop"
-                            hint="or click"
+                            hint="A4 portrait works best"
                             preview={
-                              <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
+                              <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '210 / 297', width: 120 }}>
                                 {a.logo?.src ? (
                                   <ResolvedImage
                                     src={resolvePreviewSrc(a.logo.src) ?? a.logo.src}

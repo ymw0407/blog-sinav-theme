@@ -4,6 +4,35 @@ function b64Utf8(text: string) {
   return btoa(String.fromCharCode(...new TextEncoder().encode(text)));
 }
 
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+function readStatus(e: any): number | null {
+  const s = e?.status ?? e?.response?.status ?? e?.response?.statusCode ?? null;
+  return typeof s === 'number' ? s : null;
+}
+
+async function withRetries<T>(fn: () => Promise<T>, opts?: { retries?: number; baseDelayMs?: number }): Promise<T> {
+  const retries = Math.max(0, Math.min(5, opts?.retries ?? 2));
+  const baseDelayMs = Math.max(100, opts?.baseDelayMs ?? 350);
+  let lastErr: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastErr = e;
+      const status = readStatus(e as any);
+      const retryable = status != null && status >= 500 && status <= 599;
+      if (!retryable || attempt >= retries) break;
+      const jitter = Math.floor(Math.random() * 120);
+      await sleep(baseDelayMs * Math.pow(2, attempt) + jitter);
+    }
+  }
+  throw lastErr;
+}
+
 async function fileToBase64(file: File) {
   const buf = await file.arrayBuffer();
   const bytes = new Uint8Array(buf);
@@ -60,13 +89,17 @@ export async function uploadPortfolioAsset(params: {
           : 'profile';
   const assetPath = `assets/portfolio/${subdir}/${fileName}`;
 
-  await params.octokit.repos.createOrUpdateFileContents({
-    owner: params.owner,
-    repo: params.repo,
-    path: assetPath,
-    message: `chore(asset): add ${assetPath}\n\nGenerated-By: blog-web\nSource-User: ${params.username}`,
-    content: await fileToBase64(params.file)
-  });
+  await withRetries(
+    async () =>
+      await params.octokit.repos.createOrUpdateFileContents({
+        owner: params.owner,
+        repo: params.repo,
+        path: assetPath,
+        message: `chore(asset): add ${assetPath}\n\nGenerated-By: blog-web\nSource-User: ${params.username}`,
+        content: await fileToBase64(params.file)
+      }),
+    { retries: 2, baseDelayMs: 450 }
+  );
 
   return `media/${assetPath}`;
 }
@@ -81,12 +114,16 @@ export async function upsertPortfolioJsonInRepo(params: {
   const path = 'portfolio/portfolio.json';
   const { sha } = await readJsonFromRepo({ owner: params.owner, repo: params.repo, octokit: params.octokit, path });
   const nextText = JSON.stringify(params.portfolio, null, 2) + '\n';
-  await params.octokit.repos.createOrUpdateFileContents({
-    owner: params.owner,
-    repo: params.repo,
-    path,
-    message: `feat(portfolio): update\n\nGenerated-By: blog-web\nSource-User: ${params.username}`,
-    content: b64Utf8(nextText),
-    sha
-  });
+  await withRetries(
+    async () =>
+      await params.octokit.repos.createOrUpdateFileContents({
+        owner: params.owner,
+        repo: params.repo,
+        path,
+        message: `feat(portfolio): update\n\nGenerated-By: blog-web\nSource-User: ${params.username}`,
+        content: b64Utf8(nextText),
+        sha
+      }),
+    { retries: 2, baseDelayMs: 450 }
+  );
 }
