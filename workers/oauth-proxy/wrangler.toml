@@ -6,7 +6,7 @@ compatibility_date = "2026-03-02"
 # Allowed origins for CORS (comma-separated).
 # Example:
 # ALLOWED_ORIGINS = "https://ymw0407.github.io,http://localhost:5173"
-ALLOWED_ORIGINS = "https://ymw0407.github.io"
+ALLOWED_ORIGINS = "https://blog.sinav.cloud,http://localhost:5173"
 
 # Optional: lock proxy usage to a known GitHub OAuth App client id.
 # Example:

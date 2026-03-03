@@ -658,7 +658,6 @@ globalStyle('.headerRow', {
 
 globalStyle('.headerLeft, .headerRight', { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'nowrap', minWidth: 0 });
 globalStyle('.headerRight', { justifyContent: 'flex-end' });
-globalStyle('.headerLeft', { position: 'relative' });
 
 globalStyle('.brand', {
   fontWeight: 800,
@@ -689,11 +688,6 @@ globalStyle('html[data-nav-overflow="1"] .headerMenuBtn', {
   visibility: 'visible',
   pointerEvents: 'auto',
   opacity: 1
-});
-
-globalStyle('html[data-nav-overflow="1"] .headerLeft', {
-  // Make room for the absolute-positioned menu button without affecting overflow measurement.
-  paddingLeft: 52
 });
 
 globalStyle('html[data-nav-overflow="1"] .headerCats', {
@@ -739,12 +733,6 @@ globalStyle('.headerMenuBtn', {
   display: 'none',
   width: 40,
   height: 40,
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  bottom: 0,
-  margin: 'auto 0',
-  zIndex: 2,
   borderRadius: 999,
   visibility: 'hidden',
   pointerEvents: 'none',
@@ -805,15 +793,6 @@ globalStyle('.headerLeft, .headerRight', {
     'screen and (max-width: 620px)': {
       gap: 8,
       flexWrap: 'wrap'
-    }
-  }
-});
-
-globalStyle('.headerLeft', {
-  '@media': {
-    'screen and (max-width: 760px)': {
-      // Make room for the absolute-positioned menu button.
-      paddingLeft: 52
     }
   }
 });

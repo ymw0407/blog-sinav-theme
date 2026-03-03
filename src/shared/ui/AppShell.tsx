@@ -52,6 +52,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [catsOpen, setCatsOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [navOverflow, setNavOverflow] = React.useState(false);
+  const navOverflowRef = React.useRef(false);
   const headerCatsRef = React.useRef<HTMLElement | null>(null);
   const catsWrapRef = React.useRef<HTMLDivElement | null>(null);
   const catsBtnRef = React.useRef<HTMLButtonElement | null>(null);
@@ -261,6 +262,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (isExhibit) {
       delete document.documentElement.dataset.navOverflow;
       setNavOverflow(false);
+      navOverflowRef.current = false;
       return;
     }
 
@@ -268,12 +270,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (!el) return;
 
     let raf = 0;
-    const update = () => {
-      raf = 0;
-      const next = el.scrollWidth > el.clientWidth + 4;
+    const apply = (next: boolean) => {
+      if (navOverflowRef.current === next) return;
+      navOverflowRef.current = next;
       setNavOverflow(next);
       if (next) document.documentElement.dataset.navOverflow = '1';
       else delete document.documentElement.dataset.navOverflow;
+    };
+    const update = () => {
+      raf = 0;
+      const cw = el.clientWidth;
+      // When the nav is hidden via CSS (mobile), clientWidth becomes 0 and would cause jitter.
+      if (cw <= 0) return apply(false);
+
+      const sw = el.scrollWidth;
+      const last = navOverflowRef.current;
+      const turnOn = sw > cw + 4;
+      const turnOff = sw <= cw - 24; // hysteresis: require slack before turning off
+      const next = last ? !turnOff : turnOn;
+      apply(next);
     };
     const requestUpdate = () => {
       if (raf) return;
