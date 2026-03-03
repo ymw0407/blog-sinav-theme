@@ -1,6 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import { loadLocalMedia } from '../../app/local/mediaStore';
+import { resolvePublicUrl } from '../lib/url';
 
 type Props = React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
@@ -12,7 +13,7 @@ const EMPTY_IMG =
 export default function ResolvedImage({ src, ...rest }: Props) {
   const isLocal = src.startsWith('local-media:');
   const [near, setNear] = React.useState(() => !isLocal);
-  const [resolved, setResolved] = React.useState<string>(() => (isLocal ? EMPTY_IMG : src));
+  const [resolved, setResolved] = React.useState<string>(() => (isLocal ? EMPTY_IMG : resolvePublicUrl(src)));
   const [loaded, setLoaded] = React.useState(false);
   const imgRef = React.useRef<HTMLImageElement | null>(null);
 
@@ -21,7 +22,7 @@ export default function ResolvedImage({ src, ...rest }: Props) {
   React.useEffect(() => {
     const local = src.startsWith('local-media:');
     setNear(!local);
-    setResolved(local ? EMPTY_IMG : src);
+    setResolved(local ? EMPTY_IMG : resolvePublicUrl(src));
   }, [src]);
 
   React.useEffect(() => {
@@ -53,7 +54,7 @@ export default function ResolvedImage({ src, ...rest }: Props) {
     let revoked: string | null = null;
     let cancelled = false;
     (async () => {
-      if (!src.startsWith('local-media:')) return setResolved(src);
+      if (!src.startsWith('local-media:')) return setResolved(resolvePublicUrl(src));
       if (!near) return;
       const blob = await loadLocalMedia(src);
       if (!blob) return;

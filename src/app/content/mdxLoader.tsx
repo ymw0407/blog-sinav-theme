@@ -1,5 +1,6 @@
 import React from 'react';
 import { MDXProvider } from '@mdx-js/react';
+import ResolvedImage from '../../shared/ui/ResolvedImage';
 
 const mdxModules = {
   ...import.meta.glob('/content/posts/**/*.mdx')
@@ -17,7 +18,7 @@ export async function loadMdxByImportPath(importPath: string) {
 
 const mdxComponents = {
   a: (props: any) => <a {...props} target="_blank" rel="noreferrer" />,
-  img: (props: any) => <img {...props} loading="lazy" />
+  img: (props: any) => <ResolvedImage {...props} loading={(props as any)?.loading ?? 'lazy'} />
 };
 
 export function Mdx({ children }: { children: React.ReactNode }) {

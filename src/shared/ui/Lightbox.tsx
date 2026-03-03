@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import ResolvedImage from './ResolvedImage';
 import { loadLocalMedia } from '../../app/local/mediaStore';
+import { resolvePublicUrl } from '../lib/url';
 import { IconChevronLeft, IconChevronRight, IconDownload, IconX } from './icons';
 
 export type LightboxItem = {
@@ -105,7 +106,7 @@ export default function Lightbox(props: {
       }
 
       // data: URLs and same-origin/static URLs are ok to use directly.
-      if (!cancelled) setDownloadUrl(itemSrc);
+      if (!cancelled) setDownloadUrl(resolvePublicUrl(itemSrc));
     })();
     return () => {
       cancelled = true;

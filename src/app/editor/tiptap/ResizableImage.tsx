@@ -2,6 +2,7 @@ import React from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 import { loadLocalMedia } from '../../local/mediaStore';
 import { vars } from '../../../styles/tokens/theme.css';
+import { resolvePublicUrl } from '../../../shared/lib/url';
 
 function useResolvedSrc(src: string | undefined) {
   const [resolved, setResolved] = React.useState<string | null>(null);
@@ -11,7 +12,7 @@ function useResolvedSrc(src: string | undefined) {
     let cancelled = false;
     (async () => {
       if (!src) return setResolved(null);
-      if (!src.startsWith('local-media:')) return setResolved(src);
+      if (!src.startsWith('local-media:')) return setResolved(resolvePublicUrl(src));
       const blob = await loadLocalMedia(src);
       if (!blob) return setResolved(null);
       const url = URL.createObjectURL(blob);
