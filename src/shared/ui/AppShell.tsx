@@ -6,6 +6,7 @@ import { listNavCategories, resolveCategory, getSiteConfig } from '../../app/con
 import { getEnv } from '../../app/env';
 import { getSiteIdentity, subscribeSiteIdentity } from '../../app/local/siteIdentityStore';
 import { isLocalMode, setLocalModeOverride } from '../../app/mode';
+import { applyBasicSeo } from '../../app/seo';
 import { applyCategoryAccent } from '../../app/theme/accent';
 import { applyResolvedTheme, readThemeMode, resolveTheme } from '../../app/theme/theme';
 import AppBackground from './AppBackground';
@@ -295,10 +296,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   React.useEffect(() => {
-    const heroTitle = siteIdentity?.heroTitle?.trim() || site.site.heroTitle;
-    const name = siteIdentity?.siteName?.trim() || site.site.name;
-    document.title = heroTitle || name;
-  }, [siteIdentity?.heroTitle, siteIdentity?.siteName, site.site.heroTitle, site.site.name]);
+    const title = (siteIdentity?.heroTitle?.trim() || site.site.heroTitle || siteIdentity?.siteName?.trim() || site.site.name || 'Blog').trim();
+    const description = (siteIdentity?.heroSubtitle?.trim() || site.site.heroSubtitle || '').trim() || 'Personal blog.';
+    const canonicalUrl = typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '/';
+    const imageUrl = typeof window !== 'undefined' ? `${window.location.origin}${import.meta.env.BASE_URL}og.svg` : '/og.svg';
+    applyBasicSeo({ title, description, canonicalUrl, imageUrl });
+  }, [
+    siteIdentity?.heroTitle,
+    siteIdentity?.heroSubtitle,
+    siteIdentity?.siteName,
+    site.site.heroTitle,
+    site.site.heroSubtitle,
+    site.site.name
+  ]);
 
   React.useEffect(() => {
     setCatsOpen(false);

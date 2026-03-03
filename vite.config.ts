@@ -48,6 +48,21 @@ export default defineConfig(({ mode }) => {
       mdxPlugin,
       vanillaExtractPlugin(),
       react()
-    ]
+    ],
+    build: {
+      sourcemap: false,
+      chunkSizeWarningLimit: 700,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('@tiptap/')) return 'tiptap';
+            if (id.includes('react-router')) return 'router';
+            if (id.includes('/yaml/')) return 'yaml';
+            return 'vendor';
+          }
+        }
+      }
+    }
   };
 });
