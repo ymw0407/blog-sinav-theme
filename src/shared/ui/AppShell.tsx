@@ -313,7 +313,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const title = (siteIdentity?.heroTitle?.trim() || site.site.heroTitle || siteIdentity?.siteName?.trim() || site.site.name || 'Blog').trim();
     const description = (siteIdentity?.heroSubtitle?.trim() || site.site.heroSubtitle || '').trim() || 'Personal blog.';
-    const canonicalUrl = typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '/';
+    const canonicalUrl =
+      typeof window !== 'undefined'
+        ? (() => {
+            const p = window.location.pathname || '/';
+            const isFileLike = /\.[a-z0-9]+$/i.test(p);
+            const nextPath = !isFileLike && !p.endsWith('/') ? `${p}/` : p;
+            return `${window.location.origin}${nextPath}`;
+          })()
+        : '/';
     const imageUrl = typeof window !== 'undefined' ? `${window.location.origin}${import.meta.env.BASE_URL}og.svg` : '/og.svg';
     applyBasicSeo({ title, description, canonicalUrl, imageUrl });
   }, [

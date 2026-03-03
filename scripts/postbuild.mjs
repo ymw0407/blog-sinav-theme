@@ -38,6 +38,16 @@ async function exists(p) {
   }
 }
 
+function toIsoLastmod(input, fallback) {
+  const raw = String(input ?? '').trim();
+  if (!raw) return fallback;
+  // Accept either "YYYY-MM-DD" or ISO datetime.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return `${raw}T00:00:00.000Z`;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return fallback;
+  return d.toISOString();
+}
+
 async function main() {
   const root = process.cwd();
   const distDir = path.join(root, 'dist');
@@ -89,7 +99,16 @@ async function main() {
   const contentIndexFile = path.join(generatedDir, 'content-index.json');
   let generatedAt = new Date().toISOString();
   const routes = new Set(['']); // '' represents the homepage
-  const urls = canonicalBase ? new Set([canonicalBase]) : new Set();
+  const entries = [];
+  const add = (rel, lastmod = generatedAt, opts = {}) => {
+    const route = String(rel || '').replace(/^\/+/, '').replace(/\/$/, '');
+    routes.add(route);
+    if (!canonicalBase) return;
+    const href = new URL(route ? `${route}/` : '', canonicalBase).href;
+    entries.push({ loc: href, lastmod, ...opts });
+  };
+
+  add('', generatedAt, { changefreq: 'weekly', priority: '1.0' });
 
   try {
     const raw = await fs.readFile(contentIndexFile, 'utf8');
@@ -97,14 +116,23 @@ async function main() {
     generatedAt = String(parsed?.generatedAt || generatedAt);
 
     const posts = Array.isArray(parsed?.posts) ? parsed.posts : [];
+    const lastmodByCategory = new Map();
     for (const p of posts) {
       if (!p || p.draft === true) continue;
       const category = typeof p.category === 'string' ? p.category : '';
       const slug = typeof p.slug === 'string' ? p.slug : '';
       if (!category || !slug) continue;
+      const postLastmod = toIsoLastmod(p.datetime ?? p.date, generatedAt);
       const rel = `post/${encodeURIComponent(category)}/${encodeURIComponent(slug)}`;
-      routes.add(rel);
-      if (canonicalBase) urls.add(new URL(rel, canonicalBase).href);
+      add(rel, postLastmod, { changefreq: 'monthly', priority: '0.7' });
+
+      const prev = lastmodByCategory.get(category);
+      if (!prev || postLastmod > prev) lastmodByCategory.set(category, postLastmod);
+    }
+
+    // Categories: lastmod = latest post in that category (fallback: generatedAt).
+    for (const [cat, lm] of lastmodByCategory.entries()) {
+      add(`category/${encodeURIComponent(cat)}`, lm, { changefreq: 'weekly', priority: '0.6' });
     }
   } catch {
     // optional
@@ -118,9 +146,8 @@ async function main() {
     for (const c of cats) {
       const key = typeof c?.key === 'string' ? c.key : '';
       if (!key) continue;
-      const rel = `category/${encodeURIComponent(key)}`;
-      routes.add(rel);
-      if (canonicalBase) urls.add(new URL(rel, canonicalBase).href);
+      // If not already added (from content-index-derived lastmod), add with a fallback lastmod.
+      add(`category/${encodeURIComponent(key)}`, generatedAt, { changefreq: 'weekly', priority: '0.6' });
     }
   } catch {
     // optional
@@ -128,8 +155,7 @@ async function main() {
 
   // Common top-level routes (exclude auth/editor/edit pages).
   for (const r of ['about', 'timeline', 'albums', 'gallery', 'resume', 'profile']) {
-    routes.add(r);
-    if (canonicalBase) urls.add(new URL(r, canonicalBase).href);
+    add(r, generatedAt, { changefreq: 'weekly', priority: '0.5' });
   }
 
   // Create concrete HTML entrypoints so GitHub Pages serves 200 (not 404) for SPA routes.
@@ -148,11 +174,26 @@ async function main() {
     return;
   }
 
+  const deduped = new Map();
+  for (const e of entries) {
+    const prev = deduped.get(e.loc);
+    if (!prev || String(e.lastmod || '') > String(prev.lastmod || '')) deduped.set(e.loc, e);
+  }
+  const uniqueEntries = Array.from(deduped.values()).sort((a, b) => String(a.loc).localeCompare(String(b.loc)));
+
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...Array.from(urls).map((loc) => {
-      return `  <url><loc>${xmlEscape(loc)}</loc><lastmod>${xmlEscape(generatedAt)}</lastmod></url>`;
+    ...uniqueEntries.map((e) => {
+      const parts = [
+        `  <url>`,
+        `<loc>${xmlEscape(e.loc)}</loc>`,
+        `<lastmod>${xmlEscape(toIsoLastmod(e.lastmod, generatedAt))}</lastmod>`,
+        e.changefreq ? `<changefreq>${xmlEscape(e.changefreq)}</changefreq>` : '',
+        e.priority ? `<priority>${xmlEscape(e.priority)}</priority>` : '',
+        `</url>`
+      ].filter(Boolean);
+      return parts.join('');
     }),
     '</urlset>',
     ''
