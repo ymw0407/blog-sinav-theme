@@ -684,6 +684,7 @@ globalStyle('.headerCats::-webkit-scrollbar', { display: 'none' });
 
 // When nav overflows (typically due to zoom), expose a "more" affordance.
 globalStyle('html[data-nav-overflow="1"] .headerMenuBtn', {
+  display: 'grid',
   visibility: 'visible',
   pointerEvents: 'auto',
   opacity: 1
@@ -728,8 +729,8 @@ globalStyle('.headerSocial', {
 });
 
 globalStyle('.headerMenuBtn', {
-  // Reserve space to avoid layout jitter when overflow toggles around a breakpoint/zoom.
-  display: 'grid',
+  // Hidden by default (desktop). Enabled on mobile and when nav overflows.
+  display: 'none',
   width: 40,
   height: 40,
   borderRadius: 999,
@@ -813,6 +814,7 @@ globalStyle('.headerSocial', {
 globalStyle('.headerMenuBtn', {
   '@media': {
     'screen and (max-width: 760px)': {
+      display: 'grid',
       visibility: 'visible',
       pointerEvents: 'auto',
       opacity: 1

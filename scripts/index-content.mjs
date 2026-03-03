@@ -172,6 +172,7 @@ async function main() {
   const worksFile = path.join(rootDir, 'gallery', 'works.json');
   const albumsFile = path.join(rootDir, 'albums', 'albums.json');
   const portfolioFile = path.join(rootDir, 'portfolio', 'portfolio.json');
+  const siteIdentityFile = path.join(rootDir, 'site', 'identity.json');
   const assetsDir = path.join(rootDir, 'assets');
 
   const works = (await exists(worksFile)) ? await readJson(worksFile) : [];
@@ -179,6 +180,7 @@ async function main() {
   const portfolio = (await exists(portfolioFile))
     ? await readJson(portfolioFile)
     : { name: '', headline: '', links: [], projects: [] };
+  const siteIdentity = (await exists(siteIdentityFile)) ? await readJson(siteIdentityFile) : {};
 
   if (!Array.isArray(albums)) albums = [];
   // Album manifest support: external providers (Drive/S3/GCS) should generate a manifest JSON
@@ -236,6 +238,11 @@ async function main() {
   await fs.writeFile(
     path.join(GENERATED_DIR, 'comments-index.json'),
     JSON.stringify({ generatedAt, threads: [] }, null, 2),
+    'utf8'
+  );
+  await fs.writeFile(
+    path.join(GENERATED_DIR, 'site-identity.json'),
+    JSON.stringify({ generatedAt, identity: siteIdentity ?? {} }, null, 2),
     'utf8'
   );
 

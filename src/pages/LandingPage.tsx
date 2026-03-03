@@ -14,6 +14,7 @@ import ResolvedThumb from '../shared/ui/ResolvedThumb';
 import { formatDateTime } from '../shared/lib/datetime';
 import JustifiedGrid, { type JustifiedItem } from '../shared/ui/JustifiedGrid';
 import { saveLocalImage } from '../app/local/mediaStore';
+import { upsertSiteIdentityJsonInRepo } from '../app/content/siteIdentityRepo';
 import { IconX } from '../shared/ui/icons';
 
 function isImageUrl(url: string) {
@@ -547,7 +548,11 @@ export default function LandingPage() {
 
             <div className="row" style={{ justifyContent: 'space-between', marginTop: 12 }}>
               <div className="muted" style={{ fontSize: 12 }}>
-                Saved to this browser (localStorage).
+                {local
+                  ? 'Saved to this browser (localStorage).'
+                  : ghEnabled
+                    ? 'Saved to GitHub (content/site/identity.json) and will appear after redeploy.'
+                    : 'Editing is disabled.'}
               </div>
               <div className="row" style={{ justifyContent: 'flex-end' }}>
                 <button
@@ -566,7 +571,7 @@ export default function LandingPage() {
                   type="button"
                   className="btn primary"
                   disabled={!canEditHero || heroBusy}
-                  onClick={() => {
+                  onClick={async () => {
                     const next: SiteIdentity = {
                       siteName: (heroDraft.siteName ?? siteName).trim() || undefined,
                       heroTitle: (heroDraft.heroTitle ?? heroTitle).trim(),
@@ -589,8 +594,31 @@ export default function LandingPage() {
                       // Keep legacy field empty; we now use heroMedia for rendering.
                       heroImage: null
                     };
-                    setSiteIdentity(next);
-                    setEditingHero(false);
+                    if (local) {
+                      setSiteIdentity(next);
+                      setEditingHero(false);
+                      return;
+                    }
+                    if (!ghEnabled || !state.accessToken || !isAllowedUser) {
+                      alert('Login is required to save in GitHub mode.');
+                      return;
+                    }
+                    setHeroBusy(true);
+                    try {
+                      await upsertSiteIdentityJsonInRepo({
+                        owner: env.VITE_CONTENT_REPO_OWNER,
+                        repo: env.VITE_CONTENT_REPO_NAME,
+                        octokit: getOctokit(),
+                        identity: next,
+                        username: state.username ?? 'unknown'
+                      });
+                      setSiteIdentity(next);
+                      setEditingHero(false);
+                    } catch (err) {
+                      alert(err instanceof Error ? err.message : String(err));
+                    } finally {
+                      setHeroBusy(false);
+                    }
                   }}
                 >
                   Save
@@ -793,4 +821,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
