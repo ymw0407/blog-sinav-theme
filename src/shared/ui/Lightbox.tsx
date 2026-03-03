@@ -205,83 +205,85 @@ export default function Lightbox(props: {
             </div>
             {hasMeta ? (
               <aside className="lightboxMeta" aria-label="Image details">
-                {meta?.pinned ? (
-                  <div className="pill" style={{ alignSelf: 'start' }}>
-                    Pinned
-                  </div>
-                ) : null}
-                {meta?.date ? (
-                  <div className="pill" style={{ alignSelf: 'start' }}>
-                    {meta.date}
-                  </div>
-                ) : null}
-                {meta?.title ? <div className="lightboxMetaTitle">{meta.title}</div> : null}
-                {meta?.intent ? <div className="lightboxMetaIntent">{meta.intent}</div> : null}
-                {meta?.camera || meta?.lens || meta?.film || meta?.location || meta?.note || metaRows.length ? (
-                  <div className="lightboxMetaGrid">
-                    {meta?.camera ? (
-                      <>
-                        <div className="lightboxMetaKey">Camera</div>
-                        <div className="lightboxMetaVal">{meta.camera}</div>
-                      </>
-                    ) : null}
-                    {meta?.lens ? (
-                      <>
-                        <div className="lightboxMetaKey">Lens</div>
-                        <div className="lightboxMetaVal">{meta.lens}</div>
-                      </>
-                    ) : null}
-                    {meta?.film ? (
-                      <>
-                        <div className="lightboxMetaKey">Film</div>
-                        <div className="lightboxMetaVal">{meta.film}</div>
-                      </>
-                    ) : null}
-                    {meta?.location ? (
-                      <>
-                        <div className="lightboxMetaKey">Location</div>
-                        <div className="lightboxMetaVal">{meta.location}</div>
-                      </>
-                    ) : null}
-                    {metaRows.map((r, i) => {
-                      const key = `${r.key}-${i}`;
-                      const looksLikeNote =
-                        r.key.toLowerCase() === 'note' ||
-                        r.key.toLowerCase() === 'description' ||
-                        r.value.includes('\n') ||
-                        r.value.length > 140;
-                      return (
-                        <React.Fragment key={key}>
-                          <div className="lightboxMetaKey">{r.key}</div>
-                          <div className={`lightboxMetaVal${looksLikeNote ? ' lightboxMetaNote' : ''}`}>{r.value}</div>
-                        </React.Fragment>
-                      );
-                    })}
-                    {meta?.note ? (
-                      <>
-                        <div className="lightboxMetaKey">Note</div>
-                        <div className="lightboxMetaVal lightboxMetaNote">{meta.note}</div>
-                      </>
-                    ) : null}
-                  </div>
-                ) : null}
-                {metaLinks.length ? (
-                  <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-                    {metaLinks.map((l) => (
-                      <a
-                        key={l.url}
-                        href={l.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="pill"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {l.label || l.url}
-                      </a>
-                    ))}
-                  </div>
-                ) : null}
-                {renderMetaActions ? <div style={{ marginTop: 4 }}>{renderMetaActions({ item, index })}</div> : null}
+                <div className="lightboxMetaScroll">
+                  {meta?.pinned ? (
+                    <div className="pill" style={{ alignSelf: 'start' }}>
+                      Pinned
+                    </div>
+                  ) : null}
+                  {meta?.date ? (
+                    <div className="pill" style={{ alignSelf: 'start' }}>
+                      {meta.date}
+                    </div>
+                  ) : null}
+                  {meta?.title ? <div className="lightboxMetaTitle">{meta.title}</div> : null}
+                  {meta?.intent ? <div className="lightboxMetaIntent">{meta.intent}</div> : null}
+                  {meta?.camera || meta?.lens || meta?.film || meta?.location || meta?.note || metaRows.length ? (
+                    <div className="lightboxMetaGrid">
+                      {meta?.camera ? (
+                        <>
+                          <div className="lightboxMetaKey">Camera</div>
+                          <div className="lightboxMetaVal">{meta.camera}</div>
+                        </>
+                      ) : null}
+                      {meta?.lens ? (
+                        <>
+                          <div className="lightboxMetaKey">Lens</div>
+                          <div className="lightboxMetaVal">{meta.lens}</div>
+                        </>
+                      ) : null}
+                      {meta?.film ? (
+                        <>
+                          <div className="lightboxMetaKey">Film</div>
+                          <div className="lightboxMetaVal">{meta.film}</div>
+                        </>
+                      ) : null}
+                      {meta?.location ? (
+                        <>
+                          <div className="lightboxMetaKey">Location</div>
+                          <div className="lightboxMetaVal">{meta.location}</div>
+                        </>
+                      ) : null}
+                      {metaRows.map((r, i) => {
+                        const key = `${r.key}-${i}`;
+                        const looksLikeNote =
+                          r.key.toLowerCase() === 'note' ||
+                          r.key.toLowerCase() === 'description' ||
+                          r.value.includes('\n') ||
+                          r.value.length > 140;
+                        return (
+                          <React.Fragment key={key}>
+                            <div className="lightboxMetaKey">{r.key}</div>
+                            <div className={`lightboxMetaVal${looksLikeNote ? ' lightboxMetaNote' : ''}`}>{r.value}</div>
+                          </React.Fragment>
+                        );
+                      })}
+                      {meta?.note ? (
+                        <>
+                          <div className="lightboxMetaKey">Note</div>
+                          <div className="lightboxMetaVal lightboxMetaNote">{meta.note}</div>
+                        </>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {metaLinks.length ? (
+                    <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                      {metaLinks.map((l) => (
+                        <a
+                          key={l.url}
+                          href={l.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="pill"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {l.label || l.url}
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                {renderMetaActions ? <div className="lightboxMetaActions">{renderMetaActions({ item, index })}</div> : null}
               </aside>
             ) : null}
           </div>

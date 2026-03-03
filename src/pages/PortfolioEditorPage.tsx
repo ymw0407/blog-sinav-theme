@@ -1939,9 +1939,9 @@ export default function PortfolioEditorPage() {
                         <ImageDropzone
                           disabled={saving || !canWrite}
                           label="Drop an image (or click to select)"
-                          hint="Square works best"
+                          hint="A4 portrait works best"
                           preview={
-                            <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '1 / 1', width: 104 }}>
+                            <div className="profileWorkLogoPreviewFrame" style={{ aspectRatio: '210 / 297', width: 120 }}>
                               {pub.logo?.src ? (
                                 <ResolvedImage
                                   src={resolvePreviewSrc(pub.logo.src) ?? pub.logo.src}

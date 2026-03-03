@@ -659,7 +659,7 @@ export default function PortfolioPage() {
               <div className="profileSectionTitle">Publications</div>
               <div className="resumeEntryList">
                 {p.publications.map((pub: any, i: number) => (
-                  <div className="resumeEntry resumeMediaEntry" key={i}>
+                  <div className="resumeEntry resumeMediaEntry resumeMediaEntryA4Portrait" key={i}>
                     <button
                       type="button"
                       className="resumeMediaBtn"
@@ -684,7 +684,7 @@ export default function PortfolioPage() {
                         });
                       }}
                     >
-                      <div className="resumeMediaFrame" aria-hidden="true">
+                      <div className="resumeMediaFrame resumeMediaFrameA4Portrait" aria-hidden="true">
                         {pub.logo?.src ? (
                           <ResolvedImage src={pub.logo.src} alt={pub.logo.alt ?? pub.title} className="resumeMediaImg" loading="lazy" />
                         ) : (

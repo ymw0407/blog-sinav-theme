@@ -4069,15 +4069,36 @@ globalStyle('.lightboxMeta', {
   background: 'rgba(0,0,0,.10)',
   padding: 12,
   color: '#fff',
-  display: 'grid',
-  gap: 10,
-  alignContent: 'start',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
   boxSizing: 'border-box',
   '@media': {
     'screen and (max-width: 860px)': {
       order: 2
     }
   }
+});
+
+globalStyle('.lightboxMetaScroll', {
+  minWidth: 0,
+  minHeight: 0,
+  overflowY: 'auto',
+  display: 'grid',
+  gap: 10,
+  alignContent: 'start',
+  paddingRight: 2
+});
+
+globalStyle('.lightboxMetaActions', {
+  flex: '0 0 auto',
+  marginTop: 10,
+  paddingTop: 10,
+  borderTop: '1px solid rgba(255,255,255,.12)'
+});
+
+globalStyle('html:not([data-theme="dark"]) .lightboxMetaActions', {
+  borderTop: `1px solid color-mix(in srgb, ${vars.color.border} 80%, transparent)`
 });
 
 globalStyle('html:not([data-theme="dark"]) .lightboxMeta', {
