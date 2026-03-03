@@ -662,7 +662,8 @@ globalStyle('.headerRight', { justifyContent: 'flex-end' });
 globalStyle('.brand', {
   fontWeight: 800,
   letterSpacing: '-0.02em',
-  padding: '6px 8px',
+  padding: '6px 10px',
+  paddingLeft: 14,
   borderRadius: 12,
   transition: `background-color ${vars.motion.normal} ease, color ${vars.motion.normal} ease`
 });
@@ -780,7 +781,9 @@ globalStyle('.headerRow', {
       gap: 10
     },
     'screen and (max-width: 760px)': {
-      padding: '12px 0 8px'
+      // Give the mobile header some internal horizontal padding so the hamburger
+      // isn't flush against the rounded border.
+      padding: '12px 12px 10px'
     }
   }
 });
