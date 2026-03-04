@@ -130,6 +130,23 @@ export default function GalleryPage() {
     return () => URL.revokeObjectURL(pendingPreview);
   }, [pendingPreview]);
 
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('screen and (max-width: 620px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+
+    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', update);
+    else (mq as any).addListener?.(update);
+
+    return () => {
+      if (typeof mq.removeEventListener === 'function') mq.removeEventListener('change', update);
+      else (mq as any).removeListener?.(update);
+    };
+  }, []);
+
   function clearPending() {
     if (pendingPreview) URL.revokeObjectURL(pendingPreview);
     setPendingFile(null);
@@ -1109,6 +1126,7 @@ export default function GalleryPage() {
           <JustifiedGrid
             items={photos}
             gap={10}
+            density={isMobile ? 'compact' : 'default'}
             onItemFocus={(_, idx) => {
               const p = photos[idx];
               if (p?.workId) setFocusId(p.workId);
@@ -1116,6 +1134,12 @@ export default function GalleryPage() {
             onItemClick={(_, idx) => {
               const p = photos[idx];
               if (!p?.workId) return;
+              if (isMobile) {
+                if (!lightboxItems.length) return;
+                setFocusId(p.workId);
+                setOpenIndex(idx);
+                return;
+              }
               if (focusId !== p.workId) return setFocusId(p.workId);
               if (!lightboxItems.length) return;
               setOpenIndex(idx);
@@ -1179,5 +1203,3 @@ export default function GalleryPage() {
     </div>
   );
 }
-
-

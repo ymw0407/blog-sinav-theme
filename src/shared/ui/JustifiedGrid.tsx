@@ -86,10 +86,12 @@ export default function JustifiedGrid(props: {
   onItemFocus?: (item: JustifiedItem, index: number) => void;
   gap?: number;
   variant?: 'default' | 'featured';
+  density?: 'default' | 'compact';
   maxRows?: number;
 }) {
   const gap = props.gap ?? 8;
   const variant = props.variant ?? 'default';
+  const density = props.density ?? 'default';
   const ref = React.useRef<HTMLDivElement | null>(null);
   const [w, setW] = React.useState(0);
   const [ratios, setRatios] = React.useState<Map<string, number>>(() => new Map());
@@ -112,12 +114,19 @@ export default function JustifiedGrid(props: {
     const width = Math.max(1, w);
     // The "featured" variant is used in the Landing carousel where we must keep a stable footprint.
     // It intentionally allows shorter rows so 4 items can fit without being clipped.
-    const targetRowHeight =
-      variant === 'featured' ? (width < 520 ? 220 : width < 980 ? 245 : 270) : width < 520 ? 240 : width < 980 ? 295 : 340;
-    const minRowHeight = variant === 'featured' ? (width < 520 ? 160 : 170) : width < 520 ? 200 : width < 980 ? 245 : 290;
-    const maxRowHeight = variant === 'featured' ? (width < 520 ? 290 : 330) : width < 520 ? 340 : width < 980 ? 420 : 520;
+    if (variant === 'featured') {
+      const targetRowHeight = width < 520 ? 220 : width < 980 ? 245 : 270;
+      const minRowHeight = width < 520 ? 160 : 170;
+      const maxRowHeight = width < 520 ? 290 : 330;
+      return { width, targetRowHeight, minRowHeight, maxRowHeight };
+    }
+
+    const compact = density === 'compact';
+    const targetRowHeight = compact ? (width < 520 ? 180 : width < 980 ? 250 : 320) : width < 520 ? 240 : width < 980 ? 295 : 340;
+    const minRowHeight = compact ? (width < 520 ? 140 : width < 980 ? 200 : 270) : width < 520 ? 200 : width < 980 ? 245 : 290;
+    const maxRowHeight = compact ? (width < 520 ? 260 : width < 980 ? 340 : 440) : width < 520 ? 340 : width < 980 ? 420 : 520;
     return { width, targetRowHeight, minRowHeight, maxRowHeight };
-  }, [w, variant]);
+  }, [w, variant, density]);
 
   const rows = React.useMemo(
     () =>

@@ -2448,7 +2448,13 @@ globalStyle('.exhibitTopTitle', {
   userSelect: 'none'
 });
 
-globalStyle('.exhibitHero', { padding: '18px 0 18px' });
+globalStyle('.exhibitHero', {
+  padding: '18px 0 18px',
+  '@media': {
+    // Mobile: keep the page focused on photos (title is already in the sticky topbar).
+    'screen and (max-width: 620px)': { display: 'none' }
+  }
+});
 
 globalStyle('.exhibitTitle', {
   margin: 0,
@@ -2493,6 +2499,10 @@ globalStyle('.exhibitAside', {
       gridColumn: 'auto',
       position: 'relative',
       top: 'auto'
+    },
+    // Mobile: hide the always-on description panel; details live inside the lightbox.
+    'screen and (max-width: 620px)': {
+      display: 'none'
     }
   }
 });
@@ -2603,7 +2613,12 @@ globalStyle('.exhibitWall', {
   gridTemplateColumns: 'repeat(12, 1fr)',
   gap: 14,
   alignItems: 'start',
-  paddingBottom: 22
+  paddingBottom: 22,
+  '@media': {
+    // When the layout collapses to a single column, the wall should take the full width (no "empty left").
+    'screen and (max-width: 980px)': { gridColumn: 'auto' },
+    'screen and (max-width: 620px)': { gap: 8, paddingBottom: 14 }
+  }
 });
 
 globalStyle('.justifiedGrid', { gridColumn: 'span 12', display: 'grid', gap: 10 });
@@ -3906,7 +3921,16 @@ globalStyle('.lightbox', {
   paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
   paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
   paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
-  paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))'
+  paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+  '@media': {
+    // Mobile: allow the panel to use (almost) the full viewport so photos feel large.
+    'screen and (max-width: 620px)': {
+      paddingTop: 'env(safe-area-inset-top, 0px)',
+      paddingLeft: 'env(safe-area-inset-left, 0px)',
+      paddingRight: 'env(safe-area-inset-right, 0px)',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+    }
+  }
 });
 
 globalStyle('.lightboxPanel', {
@@ -3921,7 +3945,14 @@ globalStyle('.lightboxPanel', {
   border: '1px solid rgba(255,255,255,.12)',
   background: 'rgba(0,0,0,.28)',
   boxShadow: `0 30px 100px rgba(0,0,0,.40)`,
-  overflow: 'hidden'
+  overflow: 'hidden',
+  '@media': {
+    'screen and (max-width: 620px)': {
+      width: '100%',
+      height: '100%',
+      borderRadius: 0
+    }
+  }
 });
 
 globalStyle('html:not([data-theme="dark"]) .lightboxPanel', {
@@ -3958,7 +3989,10 @@ globalStyle('.lightboxBody', {
   gap: 10,
   padding: 12,
   minHeight: 0,
-  minWidth: 0
+  minWidth: 0,
+  '@media': {
+    'screen and (max-width: 620px)': { padding: 10, gap: 8 }
+  }
 });
 
 globalStyle('.lightboxContent', {
@@ -3972,6 +4006,9 @@ globalStyle('.lightboxContent', {
     'screen and (max-width: 860px)': {
       gridTemplateColumns: 'minmax(0, 1fr)',
       gridTemplateRows: 'minmax(0, 1fr) auto'
+    },
+    'screen and (max-width: 620px)': {
+      gap: 8
     }
   }
 });
@@ -4076,6 +4113,11 @@ globalStyle('.lightboxMeta', {
   '@media': {
     'screen and (max-width: 860px)': {
       order: 2
+    },
+    // Mobile: keep the detail panel compact so the photo remains the focus.
+    'screen and (max-width: 620px)': {
+      maxHeight: 'min(340px, calc(var(--vvh, 100vh) * 0.38))',
+      padding: 10
     }
   }
 });
