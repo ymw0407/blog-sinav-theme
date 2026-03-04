@@ -1,30 +1,4 @@
 {
-  "generatedAt": "2026-03-02T06:36:04.155Z",
-  "items": [
-    {
-      "postId": "coffee/2026-02-27-brew-notes",
-      "datetime": "2026-02-27",
-      "date": "2026-02-27"
-    },
-    {
-      "postId": "dev/2026-02-27-architecture-notes",
-      "datetime": "2026-02-27",
-      "date": "2026-02-27"
-    },
-    {
-      "postId": "dev/2026-02-27-writing-workflow",
-      "datetime": "2026-02-27",
-      "date": "2026-02-27"
-    },
-    {
-      "postId": "photo/2026-02-27-photo-workflow",
-      "datetime": "2026-02-27",
-      "date": "2026-02-27"
-    },
-    {
-      "postId": "travel/2026-02-27-trip-note",
-      "datetime": "2026-02-27",
-      "date": "2026-02-27"
-    }
-  ]
+  "generatedAt": "2026-03-04T06:33:27.715Z",
+  "items": []
 }

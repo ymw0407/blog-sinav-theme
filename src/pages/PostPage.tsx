@@ -2,6 +2,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../app/auth/AuthContext';
 import { createComment, ensureCommentIssue } from '../app/comments/commentsApi';
+import { fetchCommentThread } from '../app/comments/commentsPublicRead';
 import { getCommentsIndex, getPostById } from '../app/content/contentIndex';
 import { loadDocByImportPath } from '../app/content/docLoader';
 import { loadMdxByImportPath, Mdx } from '../app/content/mdxLoader';
@@ -15,6 +16,7 @@ import { vars } from '../styles/tokens/theme.css';
 import PostDocView from './PostDocView';
 import Lightbox, { type LightboxItem } from '../shared/ui/Lightbox';
 import ResolvedThumb from '../shared/ui/ResolvedThumb';
+import type { CommentThread } from '../app/content/types';
 
 export default function PostPage() {
   const { category, slug } = useParams();
@@ -37,6 +39,19 @@ export default function PostPage() {
   const [localName, setLocalName] = React.useState('local');
   const contentRef = React.useRef<HTMLDivElement | null>(null);
   const [lightbox, setLightbox] = React.useState<{ items: LightboxItem[]; index: number } | null>(null);
+  const [thread, setThread] = React.useState<CommentThread | null>(null);
+  const [threadLoading, setThreadLoading] = React.useState(false);
+  const [threadError, setThreadError] = React.useState<string | null>(null);
+
+  const postId = post?.id ?? null;
+  const initialThread = React.useMemo(() => {
+    if (!postId) return null;
+    return getCommentsIndex().threads.find((t) => t.postId === postId) ?? null;
+  }, [postId]);
+
+  React.useEffect(() => {
+    setThread(initialThread);
+  }, [initialThread, postId]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -75,9 +90,37 @@ export default function PostPage() {
     };
   }, [post?.docImportPath, post?.mdxImportPath, post?.source]);
 
+  React.useEffect(() => {
+    if (local) return;
+    const owner = (env.VITE_CONTENT_REPO_OWNER || '').trim();
+    const repo = (env.VITE_CONTENT_REPO_NAME || '').trim();
+    if (!owner || !repo) return;
+    if (!postId) return;
+
+    let cancelled = false;
+    setThreadLoading(true);
+    setThreadError(null);
+    fetchCommentThread({ owner, repo, postId, issueNumberHint: initialThread?.issueNumber })
+      .then((t) => {
+        if (cancelled) return;
+        setThread(t);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setThreadError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setThreadLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [local, postId, env.VITE_CONTENT_REPO_OWNER, env.VITE_CONTENT_REPO_NAME, initialThread?.issueNumber]);
+
   if (!post) return <div className="card">Post not found.</div>;
 
-  const thread = getCommentsIndex().threads.find((t) => t.postId === post.id) ?? null;
   const localThread = local ? listLocalComments(post.id) : [];
 
   return (
@@ -196,7 +239,7 @@ export default function PostPage() {
       <div style={{ marginTop: 24 }}>
         <h2>댓글</h2>
         <p className="muted" style={{ marginTop: 0 }}>
-          댓글은 GitHub Issues 기반이며, 페이지 빌드 시점 스냅샷을 정적으로 렌더합니다.
+          댓글은 GitHub Issues 기반이며, 읽기는 공개 GitHub API로 실시간 로드합니다. (작성: 로그인 필요)
         </p>
 
         {local ? (
@@ -230,8 +273,16 @@ export default function PostPage() {
             {thread.comments.length === 0 ? <div className="muted">아직 댓글이 없습니다.</div> : null}
           </div>
         ) : (
-          <div className="muted">아직 스레드가 없습니다. (첫 댓글 작성 시 생성)</div>
+          <div className="muted">
+            {threadLoading ? '댓글을 불러오는 중...' : '아직 스레드가 없습니다. (첫 댓글 작성 시 생성)'}
+          </div>
         )}
+
+        {!local && threadError ? (
+          <div className="muted" style={{ marginTop: 8 }}>
+            댓글 로딩 실패: {threadError}
+          </div>
+        ) : null}
 
         <div className="card" style={{ marginTop: 12 }}>
           <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -282,13 +333,27 @@ export default function PostPage() {
                     if (local) {
                       addLocalComment({ postId: post.id, user: localName, body: comment.trim() });
                       setComment('');
-                      alert('로컬 댓글을 삭제했습니다.');
+                      alert('로컬 댓글이 등록되었습니다.');
                     } else {
                       const octokit = getOctokit();
                       const issueNumber = await ensureCommentIssue(octokit, post.id);
-                      await createComment(octokit, issueNumber, comment.trim());
+                      const res = await createComment(octokit, issueNumber, comment.trim());
+                      const data: any = res?.data ?? null;
+                      const created = {
+                        id: typeof data?.id === 'number' ? data.id : Date.now(),
+                        user: String(data?.user?.login ?? state.username ?? 'unknown'),
+                        body: String(data?.body ?? comment.trim()),
+                        createdAt: String(data?.created_at ?? new Date().toISOString())
+                      };
+                      setThread((prev) => {
+                        const base =
+                          prev && prev.issueNumber === issueNumber
+                            ? prev
+                            : { postId: post.id, issueNumber, comments: [] };
+                        return { ...base, comments: [...base.comments, created] };
+                      });
                       setComment('');
-                      alert('댓글이 등록되었습니다. (다음 빌드 후 목록에 반영됩니다.)');
+                      alert('댓글이 등록되었습니다.');
                     }
                 } catch (e) {
                   alert(e instanceof Error ? e.message : String(e));
@@ -311,4 +376,3 @@ export default function PostPage() {
     </div>
   );
 }
-

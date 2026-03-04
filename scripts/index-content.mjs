@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import matter from 'gray-matter';
 import YAML from 'yaml';
+import { Octokit } from '@octokit/rest';
 
 const ROOT = process.cwd();
 const GENERATED_DIR = path.join(ROOT, 'src', 'generated');
@@ -80,6 +81,90 @@ function normalizeThumbnail(input) {
 async function readJson(file) {
   const text = await fs.readFile(file, 'utf8');
   return JSON.parse(text);
+}
+
+function readRepoFromEnv() {
+  const owner = String(process.env.VITE_CONTENT_REPO_OWNER ?? '').trim();
+  const repo = String(process.env.VITE_CONTENT_REPO_NAME ?? '').trim();
+  if (owner && repo) return { owner, repo };
+
+  const contentRepo = String(process.env.CONTENT_REPO ?? '').trim();
+  if (contentRepo && contentRepo.includes('/')) {
+    const [o, r] = contentRepo.split('/');
+    if (o && r) return { owner: o, repo: r };
+  }
+
+  return null;
+}
+
+function readGitHubTokenFromEnv() {
+  const candidates = [
+    process.env.CONTENT_REPO_TOKEN,
+    process.env.GITHUB_TOKEN,
+    process.env.GH_TOKEN,
+    process.env.GITHUB_API_TOKEN
+  ];
+  for (const t of candidates) {
+    const token = String(t ?? '').trim();
+    if (token) return token;
+  }
+  return null;
+}
+
+function extractPostIdFromIssue(issue) {
+  const title = String(issue?.title ?? '');
+  const body = String(issue?.body ?? '');
+
+  const m1 = title.match(/^Comments:\s*(.+)\s*$/);
+  if (m1?.[1]) return m1[1].trim();
+
+  const m2 = body.match(/postId:\s*`([^`]+)`/i);
+  if (m2?.[1]) return m2[1].trim();
+
+  return null;
+}
+
+async function fetchCommentThreads({ owner, repo }) {
+  const token = readGitHubTokenFromEnv();
+  const octokit = new Octokit(token ? { auth: token } : {});
+
+  const issues = await octokit.paginate(octokit.issues.listForRepo, {
+    owner,
+    repo,
+    labels: 'blog-comment',
+    state: 'all',
+    per_page: 100
+  });
+
+  const threads = [];
+  for (const issue of issues) {
+    const postId = extractPostIdFromIssue(issue);
+    if (!postId) continue;
+    if (!issue?.number) continue;
+
+    const comments = await octokit.paginate(octokit.issues.listComments, {
+      owner,
+      repo,
+      issue_number: issue.number,
+      per_page: 100
+    });
+
+    threads.push({
+      postId,
+      issueNumber: issue.number,
+      comments: comments
+        .map((c) => ({
+          id: c.id,
+          user: c.user?.login ?? 'ghost',
+          body: c.body ?? '',
+          createdAt: c.created_at ?? new Date().toISOString()
+        }))
+        .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
+    });
+  }
+
+  threads.sort((a, b) => String(a.postId).localeCompare(String(b.postId)));
+  return threads;
 }
 
 async function main() {
@@ -235,9 +320,25 @@ async function main() {
     JSON.stringify({ generatedAt, portfolio }, null, 2),
     'utf8'
   );
+
+  let commentThreads = [];
+  const repo = readRepoFromEnv();
+  if (repo) {
+    try {
+      commentThreads = await fetchCommentThreads(repo);
+      console.log(`Indexed ${commentThreads.reduce((n, t) => n + (t.comments?.length ?? 0), 0)} comments from ${repo.owner}/${repo.repo}`);
+    } catch (e) {
+      console.warn(`[comments-index] failed to fetch from ${repo.owner}/${repo.repo}. Falling back to empty index.`);
+      console.warn(e instanceof Error ? e.message : String(e));
+      commentThreads = [];
+    }
+  } else {
+    console.log('[comments-index] skipped (VITE_CONTENT_REPO_OWNER/NAME not set).');
+  }
+
   await fs.writeFile(
     path.join(GENERATED_DIR, 'comments-index.json'),
-    JSON.stringify({ generatedAt, threads: [] }, null, 2),
+    JSON.stringify({ generatedAt, threads: commentThreads }, null, 2),
     'utf8'
   );
   await fs.writeFile(

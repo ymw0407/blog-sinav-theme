@@ -48,6 +48,11 @@ jobs:
         run: pnpm install --frozen-lockfile=false
 
       - name: Index content
+        env:
+          VITE_CONTENT_REPO_OWNER: ${{ vars.VITE_CONTENT_REPO_OWNER }}
+          VITE_CONTENT_REPO_NAME: ${{ vars.VITE_CONTENT_REPO_NAME }}
+          # Used by scripts/index-content.mjs to index comments via the GitHub API.
+          GITHUB_TOKEN: ${{ secrets.CONTENT_REPO_TOKEN || github.token }}
         run: pnpm run index-content
 
       - name: Build
