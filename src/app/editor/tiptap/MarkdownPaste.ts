@@ -1,6 +1,5 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
-import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model';
 import { marked } from 'marked';
 
 const MD_PATTERNS: RegExp[] = [
@@ -38,6 +37,8 @@ export const MarkdownPaste = Extension.create({
   priority: 1000,
 
   addProseMirrorPlugins() {
+    const editor = this.editor;
+
     return [
       new Plugin({
         key: new PluginKey('markdownPaste'),
@@ -60,16 +61,12 @@ export const MarkdownPaste = Extension.create({
               if ($from.node(d).type.name === 'codeBlock') return false;
             }
 
+            event.preventDefault();
+
             const converted = marked.parse(text, { gfm: true }) as string;
-
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = converted;
-            const parser = ProseMirrorDOMParser.fromSchema(view.state.schema);
-            const parsedSlice = parser.parseSlice(wrapper);
-
-            view.dispatch(
-              view.state.tr.replaceSelection(parsedSlice).scrollIntoView()
-            );
+            editor.commands.insertContent(converted, {
+              parseOptions: { preserveWhitespace: false }
+            });
 
             return true;
           }
