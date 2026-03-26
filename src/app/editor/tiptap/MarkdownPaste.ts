@@ -1,12 +1,8 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { DOMParser as ProseMirrorDOMParser } from '@tiptap/pm/model';
 import { marked } from 'marked';
 
-/**
- * Detect whether plain text looks like markdown content.
- * We check for structural patterns (headings, lists, code blocks, etc.)
- * so that normal prose isn't accidentally converted.
- */
 const MD_PATTERNS: RegExp[] = [
   /^#{1,6}\s+\S/m,           // Headings
   /^```/m,                    // Fenced code blocks
@@ -26,26 +22,37 @@ function looksLikeMarkdown(text: string): boolean {
   return matches >= 1;
 }
 
+/**
+ * Check whether clipboard HTML is "rich" (from a web page or office app)
+ * vs just styled plain text (from a code editor like VS Code).
+ * Rich HTML has semantic block elements; code-editor HTML is just styled spans/divs.
+ */
+function isRichHtml(html: string): boolean {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return !!div.querySelector('h1,h2,h3,h4,h5,h6,ul,ol,table,pre,blockquote,hr');
+}
+
 export const MarkdownPaste = Extension.create({
   name: 'markdownPaste',
+  priority: 1000,
 
   addProseMirrorPlugins() {
-    const editor = this.editor;
-
     return [
       new Plugin({
         key: new PluginKey('markdownPaste'),
         props: {
-          handlePaste(view, event) {
+          handlePaste(view, event, _slice) {
             const clipboardData = event.clipboardData;
             if (!clipboardData) return false;
 
-            // Rich paste (from browser / office app) – let TipTap handle natively
-            const html = clipboardData.getData('text/html');
-            if (html && html.trim()) return false;
-
             const text = clipboardData.getData('text/plain');
-            if (!text) return false;
+            if (!text || !looksLikeMarkdown(text)) return false;
+
+            // If the clipboard has rich HTML with semantic elements
+            // (from a web page, not a code editor), let TipTap use that instead
+            const html = clipboardData.getData('text/html');
+            if (html && isRichHtml(html)) return false;
 
             // Don't convert if cursor is inside a code block
             const { $from } = view.state.selection;
@@ -53,14 +60,16 @@ export const MarkdownPaste = Extension.create({
               if ($from.node(d).type.name === 'codeBlock') return false;
             }
 
-            if (!looksLikeMarkdown(text)) return false;
+            const converted = marked.parse(text, { gfm: true }) as string;
 
-            event.preventDefault();
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = converted;
+            const parser = ProseMirrorDOMParser.fromSchema(view.state.schema);
+            const parsedSlice = parser.parseSlice(wrapper);
 
-            const converted = marked.parse(text, { async: false, gfm: true }) as string;
-            editor.commands.insertContent(converted, {
-              parseOptions: { preserveWhitespace: false }
-            });
+            view.dispatch(
+              view.state.tr.replaceSelection(parsedSlice).scrollIntoView()
+            );
 
             return true;
           }
