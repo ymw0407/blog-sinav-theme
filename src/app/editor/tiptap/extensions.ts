@@ -10,6 +10,7 @@ import { Underline } from './Underline';
 import { TextColor } from './TextColor';
 import { TextHighlight } from './TextHighlight';
 import { CalloutBlockquote } from './CalloutBlockquote';
+import { MarkdownPaste } from './MarkdownPaste';
 
 export const BlockImage = Image.extend({
   addAttributes() {
@@ -46,6 +47,7 @@ export function createExtensions() {
       HTMLAttributes: { rel: 'noreferrer', target: '_blank' }
     }),
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
-    BlockImage.configure({ inline: false, allowBase64: true })
+    BlockImage.configure({ inline: false, allowBase64: true }),
+    MarkdownPaste
   ];
 }
